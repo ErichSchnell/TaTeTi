@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "137510955455",
+    "project_id": "tateti-69795",
+    "storage_bucket": "tateti-69795.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137510955455:android:94459bd48a4bf3b6e2d90a",
+        "android_client_info": {
+          "package_name": "com.example.tateti_20"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "137510955455-i27u9n78ud7rqg963bp3ep7mdhe0famo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tateti_20",
+            "certificate_hash": "a61962497226f36fe9208452c33978241eef4af1"
+          }
+        },
+        {
+          "client_id": "137510955455-vejjg0j254f59n3tn2ar3r915ncubcvm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_MEBbLWb7lXzgnfuN3BXKIUvcLZbKkwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "137510955455-vejjg0j254f59n3tn2ar3r915ncubcvm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

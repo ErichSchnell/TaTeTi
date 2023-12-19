@@ -1,0 +1,36 @@
+
+
+Datos a tener en cuenta en la BD de Firebase
+- HALLS
+-   ID Hall
+-   Board
+-   Player 1
+-       ID Player
+-       Nickname
+-       Type of Player
+-   Player 2
+-       ID Player
+-       Nickname
+-       Type of Player
+-   Player Turn
+-       ID Player
+-       Type of Player
+-
+-
+- JUGADOR
+    val userId: String = "",
+    val nickname:String = "",
+    val victories: Int = 0,
+    val defeats: Int = 0,
+    val hallId: String = "",
+    val hallName: String = "",
+
+
+
+Datos a tener en cuenta en la BD de Local
+    val userId: String = "",
+    val nickname:String = "",
+    val victories: Int = 0,
+    val defeats: Int = 0,
+    val hallId: String = "",
+    val hallName: String = "",
