@@ -14,18 +14,29 @@ import com.example.tateti_20.ui.model.HallsModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class FirebaseService @Inject constructor(): DataServerService {//private val reference:
+class FirebaseService @Inject constructor(private val firestore: FirebaseFirestore): DataServerService {//private val reference:
 
     companion object{
-        private const val PATH_GAME = "games"
-        private const val PATH_USER = "user"
+        private const val PATH_HALL = "halls"
+        private const val PATH_USER = "users"
     }
 
     override fun createUser(userModelData: UserModelData): String {
+        val user = hashMapOf(
+            "name" to "Erich",
+            "age" to 24,
+            "happy" to true,
+            "extraInfo" to null,
+            "heigh" to 12.3f,
+            "width" to 23.4
+        )
+
+        firestore.collection("users").add(user)
         return ""
     }
 

@@ -1,6 +1,7 @@
 package com.example.tateti_20.ui.home
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
@@ -10,6 +11,7 @@ import com.example.tateti_20.ui.model.UserModelUi
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -40,21 +42,21 @@ class HomeViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
-//    init {
+    init {
 //        getUser()
 
-//        val isUserLogged = authService.isUserLogged()
-//        _uiState.value = if (isUserLogged) {
-//            HomeViewState.HOME
-//        } else {
-//            HomeViewState.LOGIN
-//        }
-//    }
+        val isUserLogged = authService.isUserLogged()
+        _uiState.value = if (isUserLogged) {
+            HomeViewState.HOME
+        } else {
+            HomeViewState.LOGIN
+        }
+    }
 
     private fun getUser() {
 //        viewModelScope.launch {
 //            val userId = async { getLocalUserId() }.await()
-
+//
 //            if (userId.isNotEmpty()) {
 //                viewModelScope.launch {
 //                    joinToUser(userId).take(1).collect {
@@ -71,6 +73,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onCreateGame(hallName: String, navigateToMach: (String, String) -> Unit) {
+        Log.d("erich", "onCreateGame: entre")
 
         if (_user.value.hallId.isNullOrEmpty()) {
             val game = getNewGame(hallName = hallName)
@@ -88,7 +91,7 @@ class HomeViewModel @Inject constructor(
 //                updateGame(game.toModelData())
 //            }
         }
-        navigateToMach(_user.value.hallId, _user.value.userId)
+//        navigateToMach(_user.value.hallId, _user.value.userId)
     }
 
     private fun getNewGame(hallId: String? = null, hallName: String) = GameModelUi(
@@ -103,13 +106,15 @@ class HomeViewModel @Inject constructor(
 
 
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
-        navigateToMach(hallId, _user.value.userId)
+        Log.d("erich", "joinGame: entre")
+//        navigateToMach(hallId, _user.value.userId)
     }
 
 
     fun viewHalls(navigateToHalls: (String) -> Unit) {
-        Log.d("erich", "viewHalls: ${_user.value.userId}")
-        navigateToHalls(_user.value.userId)
+        Log.d("erich", "viewHalls: entre")
+//        Log.d("erich", "viewHalls: ${_user.value.userId}")
+//        navigateToHalls(_user.value.userId)
     }
 
     fun getSingUp() {

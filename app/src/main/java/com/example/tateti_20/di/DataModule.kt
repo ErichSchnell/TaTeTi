@@ -4,6 +4,8 @@ import android.content.Context
 import com.example.tateti_20.data.database.DataStoreService
 import com.example.tateti_20.data.network.FirebaseService
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
@@ -18,10 +20,6 @@ object DataModule {
 
 //    @Singleton
 //    @Provides
-//    fun provideDatabaseReference() = Firebase.database.reference
-//
-//    @Singleton
-//    @Provides
 //    fun provideDataServer(reference: DatabaseReference): DataServerService{
 //        return FirebaseService(reference)
 //    }
@@ -31,6 +29,10 @@ object DataModule {
 //    fun provideDatabaseService(@ApplicationContext context: Context): DatabaseLocalService {
 //        return DataStoreService(context)
 //    }
+
+    @Singleton
+    @Provides
+    fun provideFirebaseFireStore(): FirebaseFirestore = Firebase.firestore
 
     @Singleton
     @Provides
