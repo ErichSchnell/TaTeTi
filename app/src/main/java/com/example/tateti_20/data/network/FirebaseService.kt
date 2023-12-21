@@ -17,27 +17,36 @@ import com.example.tateti_20.ui.model.UserModelUi
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
-class FirebaseService @Inject constructor(private val firestore: FirebaseFirestore): DataServerService {//private val reference:
+class FirebaseService @Inject constructor(private val firestore: FirebaseFirestore): DataServerService {
 
     companion object{
         private const val PATH_HALL = "halls"
         private const val PATH_USER = "users"
     }
 
-    override fun createUser(userModelData: UserModelData): String {
+    override suspend fun createUser(userModelData: UserModelData): Boolean {
         val user = hashMapOf(
-            "name" to "Erich",
-            "age" to 24,
-            "happy" to true,
-            "extraInfo" to null,
-            "heigh" to 12.3f,
-            "width" to 23.4
+            "userId" to userModelData.userId,
+            "userEmail" to userModelData.userEmail,
+            "userName" to userModelData.userName,
+            "victories" to userModelData.victories,
+            "defeats" to userModelData.defeats,
+            "lastHall" to userModelData.lastHall
         )
 
-        firestore.collection("users").add(user)
-        return ""
+        val result = firestore.collection("users").add(user).addOnSuccessListener {
+            Log.i("createUser", "createUser: true")
+        }.addOnFailureListener{
+            Log.i("createUser", "createUser: false")
+        }.await()
+
+        return result != null
     }
 
     override fun joinToUser(userId: String) {

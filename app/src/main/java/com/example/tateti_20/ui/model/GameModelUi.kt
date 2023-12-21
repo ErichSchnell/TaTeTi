@@ -71,39 +71,6 @@ data class PlayerModelUi(
 
 }
 
-data class UserModelUi(
-    val userId: String = "",
-    val nickname:String = "",
-
-    val victories: Int = 0,
-    val defeats: Int = 0,
-
-    val hallId: String = "",
-) {
-    fun toPlayer(playerType: PlayerType): PlayerModelUi = PlayerModelUi(
-        userId = userId ,
-        nickname = nickname,
-        playerType = playerType
-    )
-    fun toModelData(): UserModelData = UserModelData(
-        userId = userId ,
-        nickname = nickname,
-        victories = victories,
-        defeats = defeats,
-        hallId = hallId,
-    )
-    fun incVic():UserModelUi{
-        return this.copy(
-            victories = victories.inc()
-        )
-    }
-    fun incDef():UserModelUi{
-        return this.copy(
-            defeats = defeats.inc()
-        )
-    }
-}
-
 sealed class PlayerType(val id: Int, val simbol: String){
     object FirstPlayer:PlayerType(2,"X")
     object SecondPlayer:PlayerType(3,"O")

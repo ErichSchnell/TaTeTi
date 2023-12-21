@@ -62,21 +62,3 @@ data class PlayerModelData(
         )
     }
 }
-
-data class UserModelData(
-    val userId: String? = null,
-    val nickname:String? = null,
-
-    val victories: Int? = null,
-    val defeats: Int? = null,
-
-    val hallId: String? = null,
-) {
-    fun toModelUi(): UserModelUi = UserModelUi(
-        userId = userId.orEmpty() ,
-        nickname = nickname.orEmpty(),
-        victories = victories ?: 0,
-        defeats = defeats ?: 0,
-        hallId = hallId.orEmpty(),
-    )
-}

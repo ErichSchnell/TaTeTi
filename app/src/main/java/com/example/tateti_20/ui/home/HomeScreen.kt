@@ -112,8 +112,8 @@ fun HomeScreen(
                 )
             }
             HomeViewState.SINGUP -> {
-                SingUp(modifier = Modifier.weight(1f), loading = loading) { email, password ->
-                    homeViewModel.singUp(email, password)
+                SingUp(modifier = Modifier.weight(1f), loading = loading) {nickname, email, password ->
+                    homeViewModel.singUp(nickname, email, password)
                 }
             }
 
@@ -505,9 +505,10 @@ fun Login(modifier: Modifier, loading: Boolean,
     }
 }
 @Composable
-fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String) -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String, String) -> Unit) {
+    var nickname by remember { mutableStateOf("erich") }
+    var email by remember { mutableStateOf("schnellerich@hotmail.com") }
+    var password by remember { mutableStateOf("1234566") }
 
     Box(
         modifier = modifier
@@ -518,6 +519,22 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String)
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.background(Background)
         ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                label = { Text(text = "nickname", color = Orange2) },
+                value = nickname,
+                onValueChange = { nickname = it },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    cursorColor = Orange1,
+                    textColor = Accent,
+                    focusedBorderColor = Orange1,
+                    unfocusedBorderColor = Orange1
+                ),
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            )
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -563,7 +580,7 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String)
                     backgroundColor = Orange1,
                     contentColor = Accent
                 ),
-                onClick = { onClickSingUp(email, password) },
+                onClick = { onClickSingUp(nickname, email, password) },
                 enabled = (email.isNotEmpty() && password.isNotEmpty())
             ) {
                 Text(text = "SingUp")

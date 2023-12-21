@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 interface DataServerService {
 
     //USER
-    fun createUser(userModelData: UserModelData): String
+    suspend fun createUser(userModelData: UserModelData): Boolean
     fun joinToUser(userId: String)//: Flow<UserModelUi?>
     fun updateUser(userData: UserModelData)
 

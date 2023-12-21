@@ -3,8 +3,6 @@ package com.example.tateti_20.ui.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tateti_20.data.network.model.GameModelData
-import com.example.tateti_20.data.network.model.PlayerModelData
 //import com.example.tateti_20.domain.JoinToBoard
 //import com.example.tateti_20.domain.JoinToGame
 //import com.example.tateti_20.domain.JoinToPlayer
@@ -20,7 +18,6 @@ import com.example.tateti_20.ui.model.UserModelUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -79,7 +76,7 @@ class GameViewModel @Inject constructor(
     *   GAME
     */
     fun joinToGameInit(hallId: String) {
-        if (_user.value?.hallId != hallId) joinLikeGuest(hallId)
+        if (_user.value?.lastHall != hallId) joinLikeGuest(hallId)
 
         join(hallId)
     }
@@ -349,10 +346,10 @@ class GameViewModel @Inject constructor(
     private fun printResumeUser() {
         Log.d("printResume", "{_user.value: ${_user.value}")
         Log.d("printResume", "{_user.value.userId: ${_user.value!!.userId}")
-        Log.d("printResume", "{_user.value.nickname: ${_user.value!!.nickname}")
+        Log.d("printResume", "{_user.value.nickname: ${_user.value!!.userName}")
         Log.d("printResume", "{_user.value.victories: ${_user.value!!.victories}")
         Log.d("printResume", "{_user.value.defeats: ${_user.value!!.defeats}")
-        Log.d("printResume", "{_user.value.hallId: ${_user.value!!.hallId}")
+        Log.d("printResume", "{_user.value.hallId: ${_user.value!!.lastHall}")
         Log.d(
             "printResume",
             "**************************************************************************"

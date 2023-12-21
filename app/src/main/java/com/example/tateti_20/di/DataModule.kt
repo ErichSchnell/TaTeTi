@@ -3,6 +3,8 @@ package com.example.tateti_20.di
 import android.content.Context
 import com.example.tateti_20.data.database.DataStoreService
 import com.example.tateti_20.data.network.FirebaseService
+import com.example.tateti_20.domain.DataServerService
+import com.example.tateti_20.domain.DatabaseLocalService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -18,21 +20,23 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataModule {
 
-//    @Singleton
-//    @Provides
-//    fun provideDataServer(reference: DatabaseReference): DataServerService{
-//        return FirebaseService(reference)
-//    }
-//
-//    @Singleton
-//    @Provides
-//    fun provideDatabaseService(@ApplicationContext context: Context): DatabaseLocalService {
-//        return DataStoreService(context)
-//    }
 
     @Singleton
     @Provides
-    fun provideFirebaseFireStore(): FirebaseFirestore = Firebase.firestore
+    fun provideFirebaseFireStore() = Firebase.firestore
+
+    @Singleton
+    @Provides
+    fun provideDataServer(firestore: FirebaseFirestore): DataServerService {
+        return FirebaseService(firestore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideDatabaseService(@ApplicationContext context: Context): DatabaseLocalService {
+        return DataStoreService(context)
+    }
+
 
     @Singleton
     @Provides

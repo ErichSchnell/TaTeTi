@@ -1,17 +1,17 @@
 package com.example.tateti_20.ui.home
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
+import com.example.tateti_20.domain.CreateNewGame
+import com.example.tateti_20.domain.CreateNewUser
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -27,7 +27,7 @@ class HomeViewModel @Inject constructor(
 //    private val createNewGame: CreateNewGame,
 //    private val updateGame: UpdateGame,
 //
-//    private val createNewUser: CreateNewUser,
+    private val createNewUser: CreateNewUser,
 //    private val joinToUser: JoinToUser,
 //    private val updateUser: UpdateUser,
 
@@ -75,7 +75,7 @@ class HomeViewModel @Inject constructor(
     fun onCreateGame(hallName: String, navigateToMach: (String, String) -> Unit) {
         Log.d("erich", "onCreateGame: entre")
 
-        if (_user.value.hallId.isNullOrEmpty()) {
+        if (_user.value.lastHall.isNullOrEmpty()) {
             val game = getNewGame(hallName = hallName)
 
 //            val hallId = createNewGame(game.toModelData())
@@ -86,7 +86,7 @@ class HomeViewModel @Inject constructor(
 //            }
 
         } else {
-            val game = getNewGame(hallId = _user.value.hallId, hallName = hallName)
+            val game = getNewGame(hallId = _user.value.lastHall, hallName = hallName)
 //            viewModelScope.launch {
 //                updateGame(game.toModelData())
 //            }
@@ -149,7 +149,7 @@ class HomeViewModel @Inject constructor(
 //        _uiState.value = HomeViewState.HOME
     }
 
-    fun singUp(email: String, password: String) {
+    fun singUp(nickname: String,email: String, password: String) {
         viewModelScope.launch() {
             _loading.value = true
             try {
@@ -157,7 +157,19 @@ class HomeViewModel @Inject constructor(
                     authService.register(email, password)
                 }
 
-                if (result != null) _uiState.value = HomeViewState.HOME
+                if (result != null) {
+                    val newUser = UserModelUi(
+                        userId = result.uid,
+                        userEmail = result.email.orEmpty(),
+                        userName = nickname
+                    )
+                    if(createNewUser(newUser)){
+                        _uiState.value = HomeViewState.HOME
+                    } else {
+                        Log.i("singUp", "error al crear usuario")
+                    }
+
+                }
 
             } catch (e: Exception) {
                 Log.e("Erich", "${e.message}")
@@ -186,6 +198,7 @@ class HomeViewModel @Inject constructor(
             }
 
             if (result != null){
+                Log.i("loginWithGoogle", "result.uid: ${result.uid}")
                 _uiState.value = HomeViewState.HOME
             }
             _loading.value = false
