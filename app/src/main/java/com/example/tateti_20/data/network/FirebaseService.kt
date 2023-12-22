@@ -1,24 +1,15 @@
 package com.example.tateti_20.data.network
 
 import android.util.Log
-import com.example.tateti_20.data.network.model.BoardModelData
 import com.example.tateti_20.data.network.model.GameModelData
-import com.example.tateti_20.data.network.model.HallsModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
 import com.example.tateti_20.domain.DataServerService
-import com.example.tateti_20.ui.model.BoardModelUi
-import com.example.tateti_20.ui.model.GameModelUi
-import com.example.tateti_20.ui.model.GameModelUiNames.*
-import com.example.tateti_20.ui.model.HallsModelUi
-import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -30,24 +21,46 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
         private const val PATH_USER = "users"
     }
 
-    override suspend fun createUser(userModelData: UserModelData): Boolean {
+    override suspend fun createUser(userModelUi: UserModelUi): Boolean {
         val user = hashMapOf(
-            "userId" to userModelData.userId,
-            "userEmail" to userModelData.userEmail,
-            "userName" to userModelData.userName,
-            "victories" to userModelData.victories,
-            "defeats" to userModelData.defeats,
-            "lastHall" to userModelData.lastHall
+            "userEmail" to userModelUi.userEmail,
+            "userName" to userModelUi.userName,
+            "victories" to userModelUi.victories,
+            "defeats" to userModelUi.defeats,
+            "lastHall" to userModelUi.lastHall
         )
 
-        val result = firestore.collection("users").add(user).addOnSuccessListener {
-            Log.i("createUser", "createUser: true")
-        }.addOnFailureListener{
-            Log.i("createUser", "createUser: false")
-        }.await()
-
-        return result != null
+        return suspendCancellableCoroutine { cancellableContinuation ->
+            firestore.collection(PATH_USER).document(userModelUi.userId).set(user).addOnSuccessListener {
+                Log.i("erich", "firebase createUser ")
+                cancellableContinuation.resume(true)
+            }.addOnFailureListener{
+                cancellableContinuation.resumeWithException(it)
+            }
+        }
     }
+
+    override suspend fun getUser(userId: String): UserModelUi? {
+
+        return suspendCancellableCoroutine {cancellableContinuation ->
+            firestore.collection(PATH_USER).document(userId).get().addOnSuccessListener{ document ->
+
+                val userModel = document.toObject<UserModelData>()
+                Log.i("erich", "firebase getUser $userModel ")
+
+                cancellableContinuation.resume(userModel?.toModelUi(userId))
+
+            }.addOnFailureListener { cancellableContinuation.resumeWithException(it) }
+        }
+    }
+
+
+
+
+
+
+
+
 
     override fun joinToUser(userId: String) {
     }

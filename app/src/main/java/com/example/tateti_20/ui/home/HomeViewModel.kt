@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
 import com.example.tateti_20.domain.CreateNewGame
 import com.example.tateti_20.domain.CreateNewUser
+import com.example.tateti_20.domain.GetUser
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -28,6 +31,7 @@ class HomeViewModel @Inject constructor(
 //    private val updateGame: UpdateGame,
 //
     private val createNewUser: CreateNewUser,
+    private val getUser: GetUser,
 //    private val joinToUser: JoinToUser,
 //    private val updateUser: UpdateUser,
 
@@ -36,6 +40,7 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<HomeViewState>(HomeViewState.LOADING)
     val uiState: StateFlow<HomeViewState> = _uiState
+
     private val _user = MutableStateFlow(UserModelUi())
     val user: StateFlow<UserModelUi> = _user
 
@@ -43,38 +48,19 @@ class HomeViewModel @Inject constructor(
     val loading: StateFlow<Boolean> = _loading
 
     init {
-//        getUser()
-
         val isUserLogged = authService.isUserLogged()
         _uiState.value = if (isUserLogged) {
+
             HomeViewState.HOME
         } else {
             HomeViewState.LOGIN
         }
     }
 
-    private fun getUser() {
-//        viewModelScope.launch {
-//            val userId = async { getLocalUserId() }.await()
-//
-//            if (userId.isNotEmpty()) {
-//                viewModelScope.launch {
-//                    joinToUser(userId).take(1).collect {
-//                        Log.w("printResume", "getUser it: $it")
-//                        _user.value = it ?: UserModelUi()
-//                    }
-//                }
-////                _uiState.value = HomeViewState.HOME
-//            } else {
-//                Log.w("printResume", "getUser userId: $userId")
-////                _uiState.value = HomeViewState.LOGIN
-//            }
-//        }
-    }
-
+    /*
+    *----------- GAME -------------
+    */
     fun onCreateGame(hallName: String, navigateToMach: (String, String) -> Unit) {
-        Log.d("erich", "onCreateGame: entre")
-
         if (_user.value.lastHall.isNullOrEmpty()) {
             val game = getNewGame(hallName = hallName)
 
@@ -93,7 +79,6 @@ class HomeViewModel @Inject constructor(
         }
 //        navigateToMach(_user.value.hallId, _user.value.userId)
     }
-
     private fun getNewGame(hallId: String? = null, hallName: String) = GameModelUi(
         hallId = hallId,
         hallName = hallName,
@@ -103,73 +88,31 @@ class HomeViewModel @Inject constructor(
         player1 = _user.value.toPlayer(PlayerType.FirstPlayer),
         playerTurn = _user.value.toPlayer(PlayerType.FirstPlayer)
     )
-
-
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
-        Log.d("erich", "joinGame: entre")
 //        navigateToMach(hallId, _user.value.userId)
     }
 
 
     fun viewHalls(navigateToHalls: (String) -> Unit) {
-        Log.d("erich", "viewHalls: entre")
-//        Log.d("erich", "viewHalls: ${_user.value.userId}")
 //        navigateToHalls(_user.value.userId)
     }
 
+/*
+*----------- AUTETICATION -------------
+*/
+    /*
+    *-------Email-------
+    */
     fun getSingUp() {
         _uiState.value = HomeViewState.SINGUP
     }
-
-    fun login(email: String, password: String) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                val result = withContext(Dispatchers.IO) {
-                    authService.login(email, password)
-                }
-                if (result != null) _uiState.value = HomeViewState.HOME
-
-            } catch (e: Exception) {
-                Log.e("Erich", "${e.message}")
-            }
-            _loading.value = false
-        }
-//        val currenId = createNewUser(UserModelUi(nickname = nickname).toModelData())
-//
-//        if (currenId.isNotEmpty()){
-//            viewModelScope.launch {
-//                saveLocalUserId(currenId)
-//                joinToUser(currenId).collect{
-//                    _user.value = it ?: UserModelUi(currenId)
-//                    Log.w("printResume", "onNickNameSelected: ${_user.value}")
-//                }
-//            }
-//        }
-//        _uiState.value = HomeViewState.HOME
-    }
-
     fun singUp(nickname: String,email: String, password: String) {
-        viewModelScope.launch() {
+        viewModelScope.launch(Dispatchers.IO){
             _loading.value = true
             try {
-                val result = withContext(Dispatchers.IO) {
-                    authService.register(email, password)
-                }
+                val result = authService.register(email, password)
 
-                if (result != null) {
-                    val newUser = UserModelUi(
-                        userId = result.uid,
-                        userEmail = result.email.orEmpty(),
-                        userName = nickname
-                    )
-                    if(createNewUser(newUser)){
-                        _uiState.value = HomeViewState.HOME
-                    } else {
-                        Log.i("singUp", "error al crear usuario")
-                    }
-
-                }
+                result?.let { createUser(result.uid,result.email.orEmpty(),nickname) }
 
             } catch (e: Exception) {
                 Log.e("Erich", "${e.message}")
@@ -177,7 +120,42 @@ class HomeViewModel @Inject constructor(
             _loading.value = false
         }
     }
+    fun login(email: String, password: String) {
 
+        viewModelScope.launch(Dispatchers.IO) {
+            _loading.value = true
+            try {
+                val result =  authService.login(email, password)
+                result?.let { loadUser(it) }
+
+            } catch (e: Exception) {
+                Log.e("Erich", "${e.message}")
+            }
+            _loading.value = false
+        }
+
+    }
+
+    /*
+    *------- Google ---------
+    */
+    fun onGoogleLoginSelected(googleLauncherLogin: (GoogleSignInClient) -> Unit) {
+        val gsc = authService.getGoogleClient()
+        googleLauncherLogin(gsc)
+    }
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _loading.value = true
+            try {
+                val result = async{ authService.loginWithGoogle(idToken) }.await()
+                result?.let { loadUser(it) }
+
+            }catch (e:Exception){
+                Log.e("Erich", "${e.message}")
+            }
+            _loading.value = false
+        }
+    }
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             authService.logout()
@@ -185,23 +163,41 @@ class HomeViewModel @Inject constructor(
         _uiState.value = HomeViewState.LOGIN
     }
 
-    fun onGoogleLoginSelected(googleLauncherLogin: (GoogleSignInClient) -> Unit) {
-        val gsc = authService.getGoogleClient()
-        googleLauncherLogin(gsc)
+
+    /*
+    *--------- USER  ---------
+    */
+    private fun loadUser(firebaseUser: FirebaseUser) {
+        viewModelScope.launch(Dispatchers.IO){
+            try {
+                val userAux = async{ getUser(firebaseUser.uid) }.await()
+
+                if (userAux.userEmail.isEmpty()){
+                    createUser(firebaseUser.uid, firebaseUser.email.orEmpty(), firebaseUser.displayName.orEmpty())
+                } else {
+                    _user.value = userAux
+                    _uiState.value = HomeViewState.HOME
+                }
+            } catch(e:Exception){
+                logout()
+                Log.e("Erich", "${e.message}")
+            }
+        }
     }
+    private fun createUser(userId: String, userEmail: String, userName: String){
+        val newUser = UserModelUi(userId = userId, userEmail = userEmail, userName = userName)
 
-    fun loginWithGoogle(idToken: String) {
-        viewModelScope.launch {
-            _loading.value = true
-            val result = withContext(Dispatchers.IO){
-                authService.loginWithGoogle(idToken)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = async { createNewUser(newUser) }.await()
+                if(result){
+                    _user.value = newUser
+                    _uiState.value = HomeViewState.HOME
+                }
+            } catch(e:Exception){
+                Log.e("Erich", "${e.message}")
             }
 
-            if (result != null){
-                Log.i("loginWithGoogle", "result.uid: ${result.uid}")
-                _uiState.value = HomeViewState.HOME
-            }
-            _loading.value = false
         }
     }
 

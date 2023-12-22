@@ -4,7 +4,6 @@ import com.example.tateti_20.ui.model.UserModelUi
 
 
 data class UserModelData(
-    val userId: String? = null,
     val userEmail:String? = null,
     val userName:String? = null,
 
@@ -13,9 +12,11 @@ data class UserModelData(
 
     val lastHall: String? = null,
 ) {
-    fun toModelUi(): UserModelUi = UserModelUi(
-        userId = userId.orEmpty() ,
+    fun toModelUi(userId:String): UserModelUi = UserModelUi(
+        userId = userId,
         userName = userName.orEmpty(),
+        userEmail = userEmail.orEmpty(),
+
         victories = victories ?: 0,
         defeats = defeats ?: 0,
         lastHall = lastHall.orEmpty(),

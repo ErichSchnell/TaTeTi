@@ -3,20 +3,18 @@ package com.example.tateti_20.domain
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
-import com.example.tateti_20.ui.model.BoardModelUi
-import com.example.tateti_20.ui.model.GameModelUi
-import com.example.tateti_20.ui.model.HallsModelUi
-import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
-import kotlinx.coroutines.flow.Flow
 
 interface DataServerService {
 
     //USER
-    suspend fun createUser(userModelData: UserModelData): Boolean
+    suspend fun createUser(userModelUi: UserModelUi): Boolean
+    suspend fun getUser(userId: String): UserModelUi?
     fun joinToUser(userId: String)//: Flow<UserModelUi?>
     fun updateUser(userData: UserModelData)
+
+
 
     //GAME
     fun createGame(gameModelData: GameModelData): String

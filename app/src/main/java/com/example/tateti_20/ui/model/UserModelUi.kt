@@ -13,7 +13,6 @@ data class UserModelUi(
     val lastHall: String = "",
 ) {
     fun toModelData(): UserModelData = UserModelData(
-        userId = userId ,
         userEmail = userEmail,
         userName = userName,
 

@@ -76,7 +76,6 @@ fun HomeScreen(
         if (result.resultCode == Activity.RESULT_OK){
             val taks =  GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
-                Log.d("erich", "googleLauncher: ")
                 val account = taks.getResult(ApiException::class.java)!!
                 homeViewModel.loginWithGoogle(account.idToken!!)
             }catch (e: ApiException){
@@ -105,7 +104,6 @@ fun HomeScreen(
                     onClickSingUp = { homeViewModel.getSingUp() },
                     onGoogleLoginSelected = {
                         homeViewModel.onGoogleLoginSelected{
-                            Log.d("erich", "HomeScreen: ")
                             googleLauncher.launch(it.signInIntent)
                         }
                     }
@@ -396,8 +394,8 @@ fun Login(modifier: Modifier, loading: Boolean,
           onClickLogin: (String, String) -> Unit,
           onClickSingUp: () -> Unit,
           onGoogleLoginSelected: () -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("schnellerich@hotmail.com") }
+    var password by remember { mutableStateOf("1234566") }
 
     Box(
         modifier = modifier
