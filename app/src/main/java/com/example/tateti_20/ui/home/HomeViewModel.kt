@@ -54,15 +54,13 @@ class HomeViewModel @Inject constructor(
         */
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.value = if (authService.isUserLogged()) {
+            if (authService.isUserLogged()) {
                 val userId = async{ getLocalUserId() }.await()
 
                 if (userId.isNotEmpty()){
                     loadUser(userId)
-                    HomeViewState.HOME
                 } else {
                     logout()
-                    HomeViewState.LOGIN
                 }
             } else {
                 HomeViewState.LOGIN
