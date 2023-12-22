@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
 import com.example.tateti_20.domain.CreateNewGame
 import com.example.tateti_20.domain.CreateNewUser
+import com.example.tateti_20.domain.GetLocalUserId
 import com.example.tateti_20.domain.GetUser
+import com.example.tateti_20.domain.SaveLocalUserId
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
@@ -24,8 +26,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-//    private val saveLocalUserId: SaveLocalUserId,
-//    private val getLocalUserId: GetLocalUserId,
+    private val saveLocalUserId: SaveLocalUserId,
+    private val getLocalUserId: GetLocalUserId,
 //
 //    private val createNewGame: CreateNewGame,
 //    private val updateGame: UpdateGame,
@@ -47,18 +49,33 @@ class HomeViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+/*
+        *-------------- CONTROL DE LOGIN / RECUPERAR USER ----------------
+        */
     init {
-        val isUserLogged = authService.isUserLogged()
-        _uiState.value = if (isUserLogged) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.value = if (authService.isUserLogged()) {
+                val userId = async{ getLocalUserId() }.await()
 
-            HomeViewState.HOME
-        } else {
-            HomeViewState.LOGIN
+                if (userId.isNotEmpty()){
+                    loadUser(userId)
+                    HomeViewState.HOME
+                } else {
+                    logout()
+                    HomeViewState.LOGIN
+                }
+            } else {
+                HomeViewState.LOGIN
+            }
         }
     }
+/*
+        *--------------------------------
+        */
 
-    /*
-    *----------- GAME -------------
+
+/*
+    *-------------- GAME ----------------
     */
     fun onCreateGame(hallName: String, navigateToMach: (String, String) -> Unit) {
         if (_user.value.lastHall.isNullOrEmpty()) {
@@ -91,15 +108,20 @@ class HomeViewModel @Inject constructor(
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
 //        navigateToMach(hallId, _user.value.userId)
     }
-
+/*
+    *--------------------------------
+    */
 
     fun viewHalls(navigateToHalls: (String) -> Unit) {
 //        navigateToHalls(_user.value.userId)
     }
 
+
+
 /*
 *----------- AUTETICATION -------------
 */
+
     /*
     *-------Email-------
     */
@@ -112,7 +134,10 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = authService.register(email, password)
 
-                result?.let { createUser(result.uid,result.email.orEmpty(),nickname) }
+                result?.let {
+                    createUser(result.uid,result.email.orEmpty(),nickname)
+                    saveLocalUserId(it.uid)
+                }
 
             } catch (e: Exception) {
                 Log.e("Erich", "${e.message}")
@@ -121,19 +146,20 @@ class HomeViewModel @Inject constructor(
         }
     }
     fun login(email: String, password: String) {
-
         viewModelScope.launch(Dispatchers.IO) {
             _loading.value = true
             try {
                 val result =  authService.login(email, password)
-                result?.let { loadUser(it) }
+                result?.let {
+                    loadUser(it.uid)
+                    saveLocalUserId(it.uid)
+                }
 
             } catch (e: Exception) {
                 Log.e("Erich", "${e.message}")
             }
             _loading.value = false
         }
-
     }
 
     /*
@@ -148,7 +174,12 @@ class HomeViewModel @Inject constructor(
             _loading.value = true
             try {
                 val result = async{ authService.loginWithGoogle(idToken) }.await()
-                result?.let { loadUser(it) }
+                result?.let {
+                    loadUser(it.uid){
+                        createUser(it.uid,it.email.orEmpty(),it.displayName.orEmpty())
+                    }
+                    saveLocalUserId(it.uid)
+                }
 
             }catch (e:Exception){
                 Log.e("Erich", "${e.message}")
@@ -159,25 +190,27 @@ class HomeViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             authService.logout()
+            saveLocalUserId("")
         }
+
         _uiState.value = HomeViewState.LOGIN
     }
-
 
     /*
     *--------- USER  ---------
     */
-    private fun loadUser(firebaseUser: FirebaseUser) {
+    private fun loadUser(serverUserId: String, createUser:()->Unit = {}) {
         viewModelScope.launch(Dispatchers.IO){
             try {
-                val userAux = async{ getUser(firebaseUser.uid) }.await()
+                val userAux = async{ getUser(serverUserId) }.await()
 
-                if (userAux.userEmail.isEmpty()){
-                    createUser(firebaseUser.uid, firebaseUser.email.orEmpty(), firebaseUser.displayName.orEmpty())
-                } else {
+                if (userAux.userEmail.isNotEmpty()){
                     _user.value = userAux
                     _uiState.value = HomeViewState.HOME
+                } else {
+                    createUser()
                 }
+
             } catch(e:Exception){
                 logout()
                 Log.e("Erich", "${e.message}")
@@ -200,7 +233,9 @@ class HomeViewModel @Inject constructor(
 
         }
     }
-
+/*
+    *---------------------------------------
+    */
 }
 
 sealed class HomeViewState {
