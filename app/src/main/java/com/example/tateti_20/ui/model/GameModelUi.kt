@@ -73,8 +73,7 @@ data class PlayerModelUi(
     val resetGame: Boolean = false
 ) {
     fun toModelData(): PlayerModelData = PlayerModelData(
-        userId = userId,
-        nickname = nickname,
+        reference = "",
         playerType = playerType.id,
         victories = victories,
         resetGame = resetGame

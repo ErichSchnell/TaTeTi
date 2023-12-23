@@ -136,6 +136,7 @@ fun HomeScreen(
                 )
             }
 
+            else -> { Loading(modifier = Modifier.weight(1f)) }
         }
     }
 
@@ -328,43 +329,15 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        OutlinedTextField(
-            label = { Text(text = "Hall Name", color = Orange2) },
-            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
-            value = nameNewHalls,
-            onValueChange = { nameNewHalls = it },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                cursorColor = Orange1,
-                textColor = Accent,
-                focusedBorderColor = Orange1,
-                unfocusedBorderColor = Orange2
-            )
-        )
-        Row(
-            modifier = Modifier.padding(end = 132.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(modifier = Modifier.padding(horizontal = 4.dp),text = "Private Hall", color = Accent)
-            Checkbox(
-                checked = !isPublic,
-                onCheckedChange = { isPublic = !it },
-                colors = CheckboxDefaults.colors(
-                    uncheckedColor = Accent,
-                    checkedColor = Orange1,
-                    checkmarkColor = Orange2
-                ),
-                enabled = true
-            )
-        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Column() {
 
-        AnimatedContent(targetState = !isPublic, label = "") {
-            if(it){
                 OutlinedTextField(
-                    label = { Text(text = "Password", color = Orange2) },
-                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
-                    value = password,
-                    onValueChange = { password = it },
+                    label = { Text(text = "Hall Name", color = Orange2) },
+                    modifier = Modifier,
+                    value = nameNewHalls,
+                    onValueChange = { nameNewHalls = it },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Orange1,
                         textColor = Accent,
@@ -372,6 +345,53 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
                         unfocusedBorderColor = Orange2
                     )
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                AnimatedContent(targetState = !isPublic, label = "") {
+                    if(it){
+                        OutlinedTextField(
+                            label = { Text(text = "Password", color = Orange2) },
+                            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                            value = password,
+                            onValueChange = { password = it },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                cursorColor = Orange1,
+                                textColor = Accent,
+                                focusedBorderColor = Orange1,
+                                unfocusedBorderColor = Orange2
+                            )
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Card (
+                modifier = Modifier
+                    .size(35.dp)
+                    .clickable { isPublic = !isPublic },
+//                    .border(1.dp, Orange2, RoundedCornerShape(4.dp)),
+                backgroundColor = Background,
+                elevation = 4.dp
+            ){
+                AnimatedContent(targetState = isPublic, label = "") {
+                    when(it){
+                        true -> {
+                            Icon(
+                                modifier = Modifier.padding(4.dp).clickable { isPublic = !isPublic },
+                                painter = painterResource(id = R.drawable.ic_lock_open),
+                                tint = Orange2,
+                                contentDescription = ""
+                            )
+                        }
+                        false -> {
+                            Icon(
+                                modifier = Modifier.padding(4.dp).clickable { isPublic = !isPublic },
+                                painter = painterResource(id = R.drawable.ic_lock),
+                                tint = Orange2,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -383,7 +403,7 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
                 contentColor = Accent
             ),
 
-            enabled = (nameNewHalls.isNotEmpty() && (isPublic || (!isPublic && password.length >= 4))),
+            enabled = (nameNewHalls.isNotEmpty() && (isPublic || password.length >= 4)),
             onClick = { onCreateGame(nameNewHalls, password) }
         ) {
             Text(text = "Create")
