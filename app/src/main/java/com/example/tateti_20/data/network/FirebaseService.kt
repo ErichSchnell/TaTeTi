@@ -21,6 +21,10 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
         private const val PATH_USER = "users"
     }
 
+
+/*
+    * ------------- USERS -----------------
+    * */
     override suspend fun createUser(userModelUi: UserModelUi): Boolean {
         val user = hashMapOf(
             "userEmail" to userModelUi.userEmail,
@@ -39,7 +43,6 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             }
         }
     }
-
     override suspend fun getUser(userId: String): UserModelUi? {
 
         return suspendCancellableCoroutine {cancellableContinuation ->
@@ -53,10 +56,46 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             }.addOnFailureListener { cancellableContinuation.resumeWithException(it) }
         }
     }
+/*
+        * --------------------------------------
+        * */
 
 
 
 
+/*
+    * ------------- GAME -----------------
+    * */
+    override suspend fun createHall(gameModelData: GameModelData): String {
+        val hall = hashMapOf(
+            "hallName" to gameModelData.hallName,
+
+            "board" to gameModelData.board,
+
+            "player1" to gameModelData.player1,
+            "player2" to gameModelData.player2,
+            "playerTurn" to gameModelData.playerTurn,
+
+            "isPublic" to gameModelData.isPublic,
+            "password" to gameModelData.password,
+
+            "isFinished" to gameModelData.isFinished,
+            "isVisible" to gameModelData.isVisible,
+            "winner" to gameModelData.winner
+        )
+
+        return suspendCancellableCoroutine { cancellableContinuation ->
+            firestore.collection(PATH_HALL).add(hall).addOnSuccessListener {
+                Log.i("erich", "firebase createHall ")
+                cancellableContinuation.resume(it.id)
+            }.addOnFailureListener{
+                cancellableContinuation.resumeWithException(it)
+            }
+        }
+    }
+/*
+            * --------------------------------------
+            * */
 
 
 
@@ -68,9 +107,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
     override fun updateUser(userData: UserModelData) {
     }
 
-    override fun createGame(gameModelData: GameModelData): String {
-        return ""
-    }
+
 
     override fun joinToGame(gameId: String) {
     }

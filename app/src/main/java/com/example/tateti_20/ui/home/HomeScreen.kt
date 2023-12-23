@@ -1,7 +1,6 @@
 package com.example.tateti_20.ui.home
 
 import android.app.Activity
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -27,6 +26,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
@@ -35,6 +36,7 @@ import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +69,8 @@ fun HomeScreen(
     navigateToMach: (String, String) -> Unit,
     navigateToHalls: (String) -> Unit
 ) {
+    val showToast by homeViewModel.showToast.collectAsState()
+
     val uiState by homeViewModel.uiState.collectAsState()
     val user by homeViewModel.user.collectAsState()
     val loading by homeViewModel.loading.collectAsState()
@@ -97,10 +101,13 @@ fun HomeScreen(
                 Loading(modifier = Modifier.weight(1f))
             }
             HomeViewState.LOGIN -> {
+
                 Login(
                     modifier = Modifier.weight(1f),
                     loading = loading,
-                    onClickLogin = { email, password -> homeViewModel.login(email, password) },
+                    onClickLogin = { email, password ->
+                        homeViewModel.login(email, password)
+                    },
                     onClickSingUp = { homeViewModel.getSingUp() },
                     onGoogleLoginSelected = {
                         homeViewModel.onGoogleLoginSelected{
@@ -108,6 +115,7 @@ fun HomeScreen(
                         }
                     }
                 )
+
             }
             HomeViewState.SINGUP -> {
                 SingUp(modifier = Modifier.weight(1f), loading = loading) {nickname, email, password ->
@@ -121,11 +129,19 @@ fun HomeScreen(
                     user = user,
                     onClickHalls = { homeViewModel.viewHalls(navigateToHalls) },
                     onJoinGame = {   homeViewModel.joinGame(it, navigateToMach) },
-                    onCreateGame = { homeViewModel.onCreateGame(it, navigateToMach) },
+                    onCreateGame = { hallName, password ->
+                        homeViewModel.onCreateGame(hallName, password, navigateToMach)
+                                   },
                     onClickLogout = { homeViewModel.logout()}
                 )
             }
 
+        }
+    }
+
+    if(!showToast.isNullOrEmpty()){
+        LaunchedEffect(showToast){
+            Toast.makeText(context, showToast, Toast.LENGTH_SHORT).show()
         }
     }
 }
@@ -187,7 +203,7 @@ fun Loading(modifier: Modifier) {
 fun Home(
     modifier: Modifier,
     user: UserModelUi,
-    onCreateGame: (String) -> Unit,
+    onCreateGame: (String, String) -> Unit,
     onJoinGame: (String) -> Unit,
     onClickHalls: () -> Unit,
     onClickLogout: () -> Unit
@@ -303,8 +319,10 @@ fun Defeats(user: UserModelUi) {
 }
 
 @Composable
-fun CreateGame(onCreateGame: (String) -> Unit) {
-    var text by remember { mutableStateOf("") }
+fun CreateGame(onCreateGame: (String, String) -> Unit) {
+    var nameNewHalls by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isPublic by remember { mutableStateOf(true) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -312,9 +330,9 @@ fun CreateGame(onCreateGame: (String) -> Unit) {
     ) {
         OutlinedTextField(
             label = { Text(text = "Hall Name", color = Orange2) },
-            modifier = Modifier.padding(24.dp),
-            value = text,
-            onValueChange = { text = it },
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+            value = nameNewHalls,
+            onValueChange = { nameNewHalls = it },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 cursorColor = Orange1,
                 textColor = Accent,
@@ -322,6 +340,41 @@ fun CreateGame(onCreateGame: (String) -> Unit) {
                 unfocusedBorderColor = Orange2
             )
         )
+        Row(
+            modifier = Modifier.padding(end = 132.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(modifier = Modifier.padding(horizontal = 4.dp),text = "Private Hall", color = Accent)
+            Checkbox(
+                checked = !isPublic,
+                onCheckedChange = { isPublic = !it },
+                colors = CheckboxDefaults.colors(
+                    uncheckedColor = Accent,
+                    checkedColor = Orange1,
+                    checkmarkColor = Orange2
+                ),
+                enabled = true
+            )
+        }
+
+        AnimatedContent(targetState = !isPublic, label = "") {
+            if(it){
+                OutlinedTextField(
+                    label = { Text(text = "Password", color = Orange2) },
+                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                    value = password,
+                    onValueChange = { password = it },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Orange1,
+                        textColor = Accent,
+                        focusedBorderColor = Orange1,
+                        unfocusedBorderColor = Orange2
+                    )
+                )
+            }
+        }
+
 
         Button(
             modifier = Modifier.padding(bottom = 24.dp),
@@ -329,8 +382,9 @@ fun CreateGame(onCreateGame: (String) -> Unit) {
                 backgroundColor = Orange1,
                 contentColor = Accent
             ),
-            enabled = text.isNotEmpty(),
-            onClick = { onCreateGame(text) }
+
+            enabled = (nameNewHalls.isNotEmpty() && (isPublic || (!isPublic && password.length >= 4))),
+            onClick = { onCreateGame(nameNewHalls, password) }
         ) {
             Text(text = "Create")
         }

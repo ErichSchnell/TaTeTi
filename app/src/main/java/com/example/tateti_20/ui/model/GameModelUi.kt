@@ -18,24 +18,39 @@ data class HallsModelUi (
 data class GameModelUi(
     val hallId: String?,
     val hallName: String,
-    val available: Boolean,
+
     val board: List<PlayerType>,
-    val player2: PlayerModelUi?,
+
     val player1: PlayerModelUi?,
+    val player2: PlayerModelUi?,
+    val playerTurn: PlayerModelUi?,
+
+    val isPublic:Boolean,
+    val password:String,
+
+    val isFinished:Boolean = false,
+    val isVisible:Boolean = true,
+    val winner:Int = 0,
 
     val isGameReady: Boolean = false,
     val isMyTurn: Boolean = false,
-    val playerTurn: PlayerModelUi?,
 ) {
     fun toModelData(): GameModelData {
         return GameModelData(
-            hallId = hallId,
             hallName = hallName,
-            available = available,
+
             board = board.map {it.id},
+
             player1 = player1?.toModelData(),
+            player2 = player2?.toModelData(),
             playerTurn = playerTurn?.toModelData(),
-            player2 = player2?.toModelData()
+
+            isPublic = isPublic,
+            password = password,
+
+            isFinished = isFinished,
+            isVisible = isVisible,
+            winner = winner,
         )
     }
     fun rstBoard(value: Boolean = false) = this.copy(board = List(9) {PlayerType.Empty})

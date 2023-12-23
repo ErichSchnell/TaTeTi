@@ -11,27 +11,42 @@ data class HallsModelData (
     val halls: List<GameModelData?>? = null,
 ) {
     fun toModelUi() = HallsModelUi (
-        halls = halls?.map{ it?.toModelUi() } ?: mutableListOf()
+        halls = halls?.map{ it?.toModelUi("") } ?: mutableListOf()
     )
 }
 data class GameModelData (
-    val hallId: String? = null,
     val hallName: String? = null,
-    val available: Boolean? = null,
+
     val board: List<Int?>? = null,
+
     val player1: PlayerModelData? = null,
     val player2: PlayerModelData? = null,
-    val playerTurn: PlayerModelData? = null
+    val playerTurn: PlayerModelData? = null,
+
+    val isPublic:Boolean? = null,
+    val password:String? = null,
+
+    val isFinished:Boolean? = null,
+    val isVisible:Boolean? = null,
+    val winner:Int? = null,
 ) {
-    fun toModelUi(): GameModelUi {
+    fun toModelUi(hallId:String): GameModelUi {
         return GameModelUi(
-            hallId = hallId.orEmpty(),
+            hallId = hallId,
             hallName = hallName.orEmpty(),
-            available = available ?: false,
+
             board = board?.map { PlayerType.getPlayerById(it) } ?: mutableListOf(),
+
             player1 = player1?.toModelUi(),
+            player2 = player2?.toModelUi(),
             playerTurn = playerTurn?.toModelUi(),
-            player2 = player2?.toModelUi()
+
+            isPublic = isPublic ?: false,
+            password = password ?: "1234",
+
+            isFinished = isFinished ?: true,
+            isVisible = isVisible ?: false,
+            winner = winner ?: 0,
         )
     }
 }

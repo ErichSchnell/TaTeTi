@@ -1,6 +1,8 @@
 package com.example.tateti_20.ui.home
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
@@ -13,14 +15,12 @@ import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -29,7 +29,7 @@ class HomeViewModel @Inject constructor(
     private val saveLocalUserId: SaveLocalUserId,
     private val getLocalUserId: GetLocalUserId,
 //
-//    private val createNewGame: CreateNewGame,
+    private val createNewGame: CreateNewGame,
 //    private val updateGame: UpdateGame,
 //
     private val createNewUser: CreateNewUser,
@@ -40,8 +40,13 @@ class HomeViewModel @Inject constructor(
     private val authService: AuthService
 ) : ViewModel() {
 
+    val TAG = "erich"
+
     private val _uiState = MutableStateFlow<HomeViewState>(HomeViewState.LOADING)
     val uiState: StateFlow<HomeViewState> = _uiState
+
+    private val _showToast = MutableStateFlow<String?>(null)
+    val showToast: StateFlow<String?> = _showToast
 
     private val _user = MutableStateFlow(UserModelUi())
     val user: StateFlow<UserModelUi> = _user
@@ -56,14 +61,18 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             if (authService.isUserLogged()) {
                 val userId = async{ getLocalUserId() }.await()
+                Log.i(TAG, "userId: $userId")
 
                 if (userId.isNotEmpty()){
+                    Log.i(TAG, "userId.isNotEmpty(): $userId")
                     loadUser(userId)
                 } else {
+                    Log.i(TAG, "userId.isEmpty(): $userId")
                     logout()
                 }
             } else {
-                HomeViewState.LOGIN
+                Log.i(TAG, "userId.NoLogin()")
+                _uiState.value = HomeViewState.LOGIN
             }
         }
     }
@@ -75,33 +84,53 @@ class HomeViewModel @Inject constructor(
 /*
     *-------------- GAME ----------------
     */
-    fun onCreateGame(hallName: String, navigateToMach: (String, String) -> Unit) {
-        if (_user.value.lastHall.isNullOrEmpty()) {
-            val game = getNewGame(hallName = hallName)
+    fun onCreateGame(hallName: String, password: String, navigateToMach: (String, String) -> Unit) {
+        val newGame = getNewGame(hallName = hallName, password = password)
 
-//            val hallId = createNewGame(game.toModelData())
-//            _user.value = _user.value.copy(hallId = hallId)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val hallId = async {createNewGame(newGame.toModelData())}.await()
 
-//            viewModelScope.launch {
-//                updateUser(_user.value.toModelData())
-//            }
-
-        } else {
-            val game = getNewGame(hallId = _user.value.lastHall, hallName = hallName)
-//            viewModelScope.launch {
-//                updateGame(game.toModelData())
-//            }
+                if(hallId.isNotEmpty()){
+                    Log.i("erich", "Sala creada: $hallId \n $newGame")
+                }
+            } catch (e:Exception){
+                Log.i("erich", "exploto todo: ${e.message}")
+            }
         }
+
+
+
+//        if (_user.value.lastHall.isNullOrEmpty()) {
+//            val game = getNewGame(hallName = hallName, password = password)
+//
+////            val hallId = createNewGame(game.toModelData())
+////            _user.value = _user.value.copy(hallId = hallId)
+//
+////            viewModelScope.launch {
+////                updateUser(_user.value.toModelData())
+////            }
+//
+//        } else {
+//            val game = getNewGame(hallId = _user.value.lastHall, hallName = hallName, password = password)
+////            viewModelScope.launch {
+////                updateGame(game.toModelData())
+////            }
+//        }
 //        navigateToMach(_user.value.hallId, _user.value.userId)
     }
-    private fun getNewGame(hallId: String? = null, hallName: String) = GameModelUi(
+    private fun getNewGame(hallId: String? = null, hallName: String, password: String) = GameModelUi(
         hallId = hallId,
         hallName = hallName,
-        available = true,
+
         board = List(9) { PlayerType.Empty },
+
         player2 = null,
         player1 = _user.value.toPlayer(PlayerType.FirstPlayer),
-        playerTurn = _user.value.toPlayer(PlayerType.FirstPlayer)
+        playerTurn = _user.value.toPlayer(PlayerType.FirstPlayer),
+
+        isPublic = password.isEmpty(),
+        password = password,
     )
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
 //        navigateToMach(hallId, _user.value.userId)
@@ -113,6 +142,11 @@ class HomeViewModel @Inject constructor(
     fun viewHalls(navigateToHalls: (String) -> Unit) {
 //        navigateToHalls(_user.value.userId)
     }
+
+
+
+
+
 
 
 
@@ -143,7 +177,7 @@ class HomeViewModel @Inject constructor(
             _loading.value = false
         }
     }
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String){
         viewModelScope.launch(Dispatchers.IO) {
             _loading.value = true
             try {
@@ -155,6 +189,7 @@ class HomeViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 Log.e("Erich", "${e.message}")
+                _showToast.value = "Credencial"
             }
             _loading.value = false
         }
@@ -197,7 +232,7 @@ class HomeViewModel @Inject constructor(
     /*
     *--------- USER  ---------
     */
-    private fun loadUser(serverUserId: String, createUser:()->Unit = {}) {
+    private fun loadUser(serverUserId: String, createUser:() -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO){
             try {
                 val userAux = async{ getUser(serverUserId) }.await()

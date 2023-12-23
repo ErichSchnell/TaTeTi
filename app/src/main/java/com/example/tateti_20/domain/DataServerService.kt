@@ -11,13 +11,18 @@ interface DataServerService {
     //USER
     suspend fun createUser(userModelUi: UserModelUi): Boolean
     suspend fun getUser(userId: String): UserModelUi?
+
+
+    suspend fun createHall(gameModelData: GameModelData): String
+
+
+
     fun joinToUser(userId: String)//: Flow<UserModelUi?>
     fun updateUser(userData: UserModelData)
 
 
 
     //GAME
-    fun createGame(gameModelData: GameModelData): String
     fun joinToGame(gameId: String)//: Flow<GameModelUi?>
     fun updateGame(gameModelData: GameModelData)
 

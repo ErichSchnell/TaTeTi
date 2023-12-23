@@ -122,7 +122,6 @@ fun ItemHall(hall: GameModelUi?,onClickHall:(String)->Unit) {
 
     if (hall == null) return
     if (hall.hallId == null) return
-    if (!hall.available) return
 
     Card(
         modifier = Modifier
