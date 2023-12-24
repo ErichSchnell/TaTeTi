@@ -7,8 +7,12 @@ import com.example.tateti_20.data.network.model.UserModelData
 import com.example.tateti_20.domain.DataServerService
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.ktx.toObject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -25,17 +29,19 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 /*
     * ------------- USERS -----------------
     * */
-    override suspend fun createUser(userModelUi: UserModelUi): Boolean {
+    override suspend fun createUser(userId: String, userModelData: UserModelData): Boolean {
         val user = hashMapOf(
-            "userEmail" to userModelUi.userEmail,
-            "userName" to userModelUi.userName,
-            "victories" to userModelUi.victories,
-            "defeats" to userModelUi.defeats,
-            "lastHall" to userModelUi.lastHall
+            "userEmail" to userModelData.userEmail,
+            "userName" to userModelData.userName,
+
+            "victories" to userModelData.victories,
+            "defeats" to userModelData.defeats,
+
+            "lastHall" to userModelData.lastHall
         )
 
         return suspendCancellableCoroutine { cancellableContinuation ->
-            firestore.collection(PATH_USER).document(userModelUi.userId).set(user).addOnSuccessListener {
+            firestore.collection(PATH_USER).document(userId).set(user).addOnSuccessListener {
                 Log.i("erich", "firebase createUser ")
                 cancellableContinuation.resume(true)
             }.addOnFailureListener{
@@ -56,6 +62,28 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             }.addOnFailureListener { cancellableContinuation.resumeWithException(it) }
         }
     }
+    override suspend fun updateUser(userId: String, userModelData: UserModelData):Boolean {
+        val user = hashMapOf(
+            "userEmail" to userModelData.userEmail,
+            "userName" to userModelData.userName,
+
+            "victories" to userModelData.victories,
+            "defeats" to userModelData.defeats,
+
+            "lastHall" to userModelData.lastHall
+        )
+
+        return suspendCancellableCoroutine { cancellableContinuation ->
+            firestore.collection(PATH_USER).document(userId).set(user).addOnSuccessListener {
+                Log.i("erich", "firebase update ")
+                cancellableContinuation.resume(true)
+            }.addOnFailureListener{
+                cancellableContinuation.resumeWithException(it)
+            }
+        }
+    }
+    override fun joinToUser(userId: String) {
+    }
 /*
         * --------------------------------------
         * */
@@ -67,14 +95,33 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
     * ------------- GAME -----------------
     * */
     override suspend fun createHall(gameModelData: GameModelData): String {
+    val player1 = hashMapOf(
+        "user" to gameModelData.player1?.user?.let { firestore.collection(PATH_USER).document(it) },
+        "playerType" to gameModelData.player1?.playerType,
+        "victories" to gameModelData.player1?.victories,
+        "resetGame" to gameModelData.player1?.resetGame
+    )
+    val player2 = hashMapOf(
+        "user" to gameModelData.player2?.user?.let { firestore.collection(PATH_USER).document(it) },
+        "playerType" to gameModelData.player2?.playerType,
+        "victories" to gameModelData.player2?.victories,
+        "resetGame" to gameModelData.player2?.resetGame
+    )
+    val playerTurn = hashMapOf(
+        "user" to gameModelData.playerTurn?.user?.let { firestore.collection(PATH_USER).document(it) },
+        "playerType" to gameModelData.playerTurn?.playerType,
+        "victories" to gameModelData.playerTurn?.victories,
+        "resetGame" to gameModelData.playerTurn?.resetGame
+    )
+
         val hall = hashMapOf(
             "hallName" to gameModelData.hallName,
 
             "board" to gameModelData.board,
 
-            "player1" to gameModelData.player1,
-            "player2" to gameModelData.player2,
-            "playerTurn" to gameModelData.playerTurn,
+            "player1" to player1,
+            "player2" to player2,
+            "playerTurn" to playerTurn,
 
             "isPublic" to gameModelData.isPublic,
             "password" to gameModelData.password,
@@ -93,6 +140,20 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             }
         }
     }
+    override fun joinToHall(gameId: String) {
+
+        Log.i("erich", "gameId: $gameId")
+
+        firestore.collection(PATH_HALL).document(gameId).addSnapshotListener { value, error ->
+            value?.let {
+                Log.i("erich", "value: $value")
+            }
+        }
+    }
+    override fun joinToBoard(gameId: String) {
+    }
+    override fun joinToPlayer(gameId: String, player: PlayerType) {
+    }
 /*
             * --------------------------------------
             * */
@@ -101,27 +162,11 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
 
 
-    override fun joinToUser(userId: String) {
-    }
-
-    override fun updateUser(userData: UserModelData) {
-    }
-
-
-
-    override fun joinToGame(gameId: String) {
-    }
 
     override fun updateGame(gameModelData: GameModelData) {
     }
 
-    override fun joinToBoard(gameId: String) {
-    }
-
     override fun updateBoard(gameModelData: GameModelData) {
-    }
-
-    override fun joinToPlayer(gameId: String, player: PlayerType) {
     }
 
     override fun updatePlayer(hallId: String, playerModelData: PlayerModelData) {

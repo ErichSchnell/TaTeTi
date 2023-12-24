@@ -11,6 +11,7 @@ import com.example.tateti_20.domain.CreateNewUser
 import com.example.tateti_20.domain.GetLocalUserId
 import com.example.tateti_20.domain.GetUser
 import com.example.tateti_20.domain.SaveLocalUserId
+import com.example.tateti_20.domain.UpdateUser
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
@@ -34,8 +35,8 @@ class HomeViewModel @Inject constructor(
 //
     private val createNewUser: CreateNewUser,
     private val getUser: GetUser,
+    private val setUser: UpdateUser,
 //    private val joinToUser: JoinToUser,
-//    private val updateUser: UpdateUser,
 
     private val authService: AuthService
 ) : ViewModel() {
@@ -47,6 +48,9 @@ class HomeViewModel @Inject constructor(
 
     private val _showToast = MutableStateFlow<String?>(null)
     val showToast: StateFlow<String?> = _showToast
+
+    private val _navigateToHall = MutableStateFlow(NavigateToHall())
+    val navigateToHall: StateFlow<NavigateToHall> = _navigateToHall
 
     private val _user = MutableStateFlow(UserModelUi())
     val user: StateFlow<UserModelUi> = _user
@@ -92,32 +96,13 @@ class HomeViewModel @Inject constructor(
                 val hallId = async {createNewGame(newGame.toModelData())}.await()
 
                 if(hallId.isNotEmpty()){
+                    updateUser(_user.value.copy(lastHall = hallId))
                     Log.i("erich", "Sala creada: $hallId \n $newGame")
                 }
             } catch (e:Exception){
                 Log.i("erich", "exploto todo: ${e.message}")
             }
         }
-
-
-
-//        if (_user.value.lastHall.isNullOrEmpty()) {
-//            val game = getNewGame(hallName = hallName, password = password)
-//
-////            val hallId = createNewGame(game.toModelData())
-////            _user.value = _user.value.copy(hallId = hallId)
-//
-////            viewModelScope.launch {
-////                updateUser(_user.value.toModelData())
-////            }
-//
-//        } else {
-//            val game = getNewGame(hallId = _user.value.lastHall, hallName = hallName, password = password)
-////            viewModelScope.launch {
-////                updateGame(game.toModelData())
-////            }
-//        }
-//        navigateToMach(_user.value.hallId, _user.value.userId)
     }
     private fun getNewGame(hallId: String? = null, hallName: String, password: String) = GameModelUi(
         hallId = hallId,
@@ -125,15 +110,15 @@ class HomeViewModel @Inject constructor(
 
         board = List(9) { PlayerType.Empty },
 
-        player2 = null,
         player1 = _user.value.toPlayer(PlayerType.FirstPlayer),
+        player2 = null,
         playerTurn = _user.value.toPlayer(PlayerType.FirstPlayer),
 
         isPublic = password.isEmpty(),
         password = password,
     )
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
-//        navigateToMach(hallId, _user.value.userId)
+         navigateToMach(hallId, _user.value.userId)
     }
 /*
     *--------------------------------
@@ -266,9 +251,32 @@ class HomeViewModel @Inject constructor(
 
         }
     }
-/*
-    *---------------------------------------
-    */
+    private fun updateUser(user:UserModelUi){
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = async { setUser(user) }.await()
+
+                if(result){
+                    _user.value = user
+                    _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
+                }
+            } catch(e:Exception){
+                Log.e("Erich", "${e.message}")
+            }
+        }
+    }
+
+
+    fun clearToast() {
+        _showToast.value = ""
+    }
+
+    fun clearNavigateToHall() {
+        _navigateToHall.value = _navigateToHall.value.copy(false)
+    }
+    /*
+        *---------------------------------------
+        */
 }
 
 sealed class HomeViewState {
@@ -277,3 +285,9 @@ sealed class HomeViewState {
     object HOME : HomeViewState()
     object SINGUP : HomeViewState()
 }
+
+data class NavigateToHall(
+    val state:Boolean = false,
+    val hallId:String = "",
+    val userId:String = ""
+)

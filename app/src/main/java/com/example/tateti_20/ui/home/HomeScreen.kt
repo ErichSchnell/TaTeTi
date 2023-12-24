@@ -70,6 +70,7 @@ fun HomeScreen(
     navigateToHalls: (String) -> Unit
 ) {
     val showToast by homeViewModel.showToast.collectAsState()
+    val navigateToHall by homeViewModel.navigateToHall.collectAsState()
 
     val uiState by homeViewModel.uiState.collectAsState()
     val user by homeViewModel.user.collectAsState()
@@ -131,19 +132,22 @@ fun HomeScreen(
                     onJoinGame = {   homeViewModel.joinGame(it, navigateToMach) },
                     onCreateGame = { hallName, password ->
                         homeViewModel.onCreateGame(hallName, password, navigateToMach)
-                                   },
+                   },
                     onClickLogout = { homeViewModel.logout()}
                 )
             }
-
-            else -> { Loading(modifier = Modifier.weight(1f)) }
         }
     }
 
     if(!showToast.isNullOrEmpty()){
         LaunchedEffect(showToast){
             Toast.makeText(context, showToast, Toast.LENGTH_SHORT).show()
+            homeViewModel.clearToast()
         }
+    }
+    if (navigateToHall.state){
+        homeViewModel.clearNavigateToHall()
+        navigateToMach(navigateToHall.hallId,navigateToHall.userId)
     }
 }
 
@@ -384,7 +388,10 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
                         }
                         false -> {
                             Icon(
-                                modifier = Modifier.padding(4.dp).clickable { isPublic = !isPublic },
+                                modifier = Modifier.padding(4.dp).clickable {
+                                    isPublic = !isPublic
+                                    password = ""
+                                },
                                 painter = painterResource(id = R.drawable.ic_lock),
                                 tint = Orange2,
                                 contentDescription = ""

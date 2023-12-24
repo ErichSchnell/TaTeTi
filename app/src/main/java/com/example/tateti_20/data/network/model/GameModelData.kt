@@ -61,15 +61,15 @@ data class BoardModelData(
 
 
 data class PlayerModelData(
-    val reference:String? = null,
+    val user: String? = null,
+
     val playerType:Int? = null,
     val victories:Int? = null,
     val resetGame: Boolean? = null
 ) {
     fun toModelUi(): PlayerModelUi {
         return PlayerModelUi(
-            userId = "userId.orEmpty()",
-            nickname = "nickname.orEmpty()",
+            user = UserModelUi(),
             playerType = PlayerType.getPlayerById(playerType ?: 0),
             victories = victories ?: 0,
             resetGame = resetGame ?: false

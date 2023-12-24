@@ -5,8 +5,6 @@ import javax.inject.Inject
 
 class CreateNewUser  @Inject constructor(private val dataServer: DataServerService) {
     suspend operator fun invoke(userModelUi: UserModelUi): Boolean {
-        val userModelData = userModelUi.toModelData()
-
-        return dataServer.createUser(userModelUi)
+        return dataServer.createUser(userModelUi.userId,userModelUi.toModelData())
     }
 }

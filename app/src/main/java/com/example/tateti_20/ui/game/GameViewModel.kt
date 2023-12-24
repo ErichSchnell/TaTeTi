@@ -3,6 +3,7 @@ package com.example.tateti_20.ui.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tateti_20.domain.JoinToHall
 //import com.example.tateti_20.domain.JoinToBoard
 //import com.example.tateti_20.domain.JoinToGame
 //import com.example.tateti_20.domain.JoinToPlayer
@@ -15,17 +16,19 @@ import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.google.firebase.firestore.ktx.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private val TAG = "erich"
+private val TAG = "Erich"
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-//    private val joinToGame: JoinToGame,
+    private val joinToHall: JoinToHall,
 //    private val updateGame: UpdateGame,
 //
 //    private val joinToBoard: JoinToBoard,
@@ -58,16 +61,9 @@ class GameViewModel @Inject constructor(
     *   USER
     */
     fun initGame(userId: String, hallId: String) {
-        viewModelScope.launch {
-//            joinToUser(userId).collect {
-//                if (it != null) {
-//                    _user.value = it
-//                    printResumeUser()
-//
-//                    if (_uiState.value == GameViewState.LOADING) joinToGameInit(hallId)
-//                    Log.d(TAG, "initGame: fin")
-//                }
-//            }
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.i("erich", "userId: $userId \nhallId: $hallId")
+            joinToHall(hallId)
         }
     }
 
@@ -203,7 +199,7 @@ class GameViewModel @Inject constructor(
     private fun setGameReady(){
         _game.value = _game.value?.copy(isGameReady = true)
     }
-    private fun isMyTurn(playerTurn: PlayerModelUi) = playerTurn.userId == _user.value?.userId
+    private fun isMyTurn(playerTurn: PlayerModelUi) = playerTurn.user.userId == _user.value?.userId
 
 
     fun onClickItem(position: Int) {
@@ -220,12 +216,12 @@ class GameViewModel @Inject constructor(
         }
     }
     private fun getEnemyPlayer(): PlayerModelUi? {
-        return if (game.value?.player1?.userId == _user.value?.userId) game.value?.player2 else game.value?.player1
+        return if (game.value?.player1?.user?.userId == _user.value?.userId) game.value?.player2 else game.value?.player1
     }
     private fun getPlayerType(): PlayerType? {
         return when {
-            game.value?.player1?.userId == _user.value?.userId -> PlayerType.FirstPlayer
-            game.value?.player2?.userId == _user.value?.userId -> PlayerType.SecondPlayer
+            game.value?.player1?.user?.userId == _user.value?.userId -> PlayerType.FirstPlayer
+            game.value?.player2?.user?.userId == _user.value?.userId -> PlayerType.SecondPlayer
             else -> null
         }
     }

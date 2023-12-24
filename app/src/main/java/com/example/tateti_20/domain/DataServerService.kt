@@ -9,8 +9,9 @@ import com.example.tateti_20.ui.model.UserModelUi
 interface DataServerService {
 
     //USER
-    suspend fun createUser(userModelUi: UserModelUi): Boolean
+    suspend fun createUser(userId:String, userModelData: UserModelData): Boolean
     suspend fun getUser(userId: String): UserModelUi?
+    suspend fun updateUser(userId: String, userData: UserModelData):Boolean
 
 
     suspend fun createHall(gameModelData: GameModelData): String
@@ -18,12 +19,11 @@ interface DataServerService {
 
 
     fun joinToUser(userId: String)//: Flow<UserModelUi?>
-    fun updateUser(userData: UserModelData)
 
 
 
     //GAME
-    fun joinToGame(gameId: String)//: Flow<GameModelUi?>
+    fun joinToHall(gameId: String)//: Flow<GameModelUi?>
     fun updateGame(gameModelData: GameModelData)
 
     fun joinToBoard(gameId: String)//: Flow<BoardModelUi?>

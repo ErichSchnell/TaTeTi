@@ -227,8 +227,8 @@ fun GameItem(playerType: PlayerType, onClickItem:()->Unit) {
 @Composable
 fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeGame:()->Unit) {
     val currentWinner = when (winner) {
-        PlayerType.FirstPlayer -> game.player1?.nickname
-        PlayerType.SecondPlayer -> game.player2?.nickname
+        PlayerType.FirstPlayer -> game.player1?.user?.userName
+        PlayerType.SecondPlayer -> game.player2?.user?.userName
         PlayerType.Empty -> "EMPATE"
     }
     val title = if(winner != PlayerType.Empty) "¡FELICITACIONES!" else "¡MUY CERCA!"
@@ -288,7 +288,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 .height(24.dp))
 
             val waitingPlayer = if(game.player1?.resetGame == true || game.player2?.resetGame == true) {
-                if (game.player1?.resetGame == true) "Esperando ${game.player2?.nickname}" else "Esperando ${game.player1?.nickname}"
+                if (game.player1?.resetGame == true) "Esperando ${game.player2?.user?.userName}" else "Esperando ${game.player1?.user?.userName}"
             } else {
                 ""
             }
@@ -322,7 +322,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
 fun Puntaje(player: PlayerModelUi?) {
     val currentVictories = player?.victories?.toString() ?: "0"
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = player?.nickname ?: "*****", fontSize = 20.sp, color = Orange1, fontWeight = FontWeight.Normal)
+        Text(text = player?.user?.userName ?: "*****", fontSize = 20.sp, color = Orange1, fontWeight = FontWeight.Normal)
         Text(text = currentVictories, fontSize = 48.sp, color = Orange2, fontWeight = FontWeight.Bold)
     }
 }

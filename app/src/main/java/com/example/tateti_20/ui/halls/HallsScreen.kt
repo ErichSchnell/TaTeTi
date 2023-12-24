@@ -140,8 +140,8 @@ fun ItemHall(hall: GameModelUi?,onClickHall:(String)->Unit) {
                     .fillMaxWidth()
                     .weight(1f)
             )
-            if (hall.player1 != null) NameJugador(hall.player1.nickname)
-            if (hall.player2 != null) NameJugador(hall.player2.nickname)
+            if (hall.player1 != null) NameJugador(hall.player1.user.userName)
+            if (hall.player2 != null) NameJugador(hall.player2.user.userName)
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()

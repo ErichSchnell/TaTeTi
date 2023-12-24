@@ -4,7 +4,6 @@ import com.example.tateti_20.data.network.model.BoardModelData
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.HallsModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
-import com.example.tateti_20.data.network.model.UserModelData
 
 
 data class HallsModelUi (
@@ -66,14 +65,15 @@ data class BoardModelUi(
 }
 
 data class PlayerModelUi(
-    val userId: String = "",
-    val nickname:String = "",
+    val user:UserModelUi = UserModelUi(),
+
     val playerType: PlayerType = PlayerType.Empty,
     val victories: Int = 0,
     val resetGame: Boolean = false
 ) {
     fun toModelData(): PlayerModelData = PlayerModelData(
-        reference = "",
+        user = user.userId,
+
         playerType = playerType.id,
         victories = victories,
         resetGame = resetGame
