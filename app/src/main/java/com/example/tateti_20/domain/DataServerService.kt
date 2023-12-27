@@ -3,8 +3,13 @@ package com.example.tateti_20.domain
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
+import com.example.tateti_20.data.network.model.receive.GameModelDataReceive
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestoreException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface DataServerService {
 
@@ -23,7 +28,8 @@ interface DataServerService {
 
 
     //GAME
-    fun joinToHall(gameId: String)//: Flow<GameModelUi?>
+    suspend fun joinToHall(gameId: String): Flow<GameModelData>//Flow<List<Int?>?>
+//    suspend fun joinToHall(gameId: String)
     fun updateGame(gameModelData: GameModelData)
 
     fun joinToBoard(gameId: String)//: Flow<BoardModelUi?>
@@ -34,6 +40,7 @@ interface DataServerService {
 
     //HALLS
     fun getHalls()//: Flow<HallsModelUi?>
+
 
 
 }

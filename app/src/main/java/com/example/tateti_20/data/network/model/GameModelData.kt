@@ -6,6 +6,7 @@ import com.example.tateti_20.ui.model.HallsModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.google.firebase.firestore.PropertyName
 
 data class HallsModelData (
     val halls: List<GameModelData?>? = null,
@@ -23,7 +24,7 @@ data class GameModelData (
     val player2: PlayerModelData? = null,
     val playerTurn: PlayerModelData? = null,
 
-    val isPublic:Boolean? = null,
+    @field:PropertyName("isPublic") val isPublic:Boolean? = null,
     val password:String? = null,
 
     val isFinished:Boolean? = null,

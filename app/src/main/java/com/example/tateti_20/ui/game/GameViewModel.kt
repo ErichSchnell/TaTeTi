@@ -1,6 +1,8 @@
 package com.example.tateti_20.ui.game
 
 import android.util.Log
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.domain.JoinToHall
@@ -21,6 +23,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -63,7 +66,15 @@ class GameViewModel @Inject constructor(
     fun initGame(userId: String, hallId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             Log.i("erich", "userId: $userId \nhallId: $hallId")
-            joinToHall(hallId)
+            try {
+//                joinToHall(hallId)
+                joinToHall(hallId).collect {
+                    val result = it
+                    Log.i(TAG, "initGame result: $result")
+                }
+            } catch (e: Exception) {
+                Log.i(TAG, "initGame error: ${e.message}")
+            }
         }
     }
 

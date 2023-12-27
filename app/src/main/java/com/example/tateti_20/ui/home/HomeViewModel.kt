@@ -257,6 +257,7 @@ class HomeViewModel @Inject constructor(
                 val result = async { setUser(user) }.await()
 
                 if(result){
+                    Log.e("Erich", "$result")
                     _user.value = user
                     _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }
