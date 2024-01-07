@@ -3,13 +3,9 @@ package com.example.tateti_20.domain
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
-import com.example.tateti_20.data.network.model.receive.GameModelDataReceive
-import com.example.tateti_20.ui.model.PlayerType
+import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.UserModelUi
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface DataServerService {
 
@@ -28,14 +24,14 @@ interface DataServerService {
 
 
     //GAME
-    suspend fun joinToHall(gameId: String): Flow<GameModelData>//Flow<List<Int?>?>
-//    suspend fun joinToHall(gameId: String)
-    fun updateGame(gameModelData: GameModelData)
+    suspend fun getToHall(gameId: String): GameModelUi
+    suspend fun joinToHall(gameId: String): Flow<GameModelUi>//Flow<List<Int?>?>
+    suspend fun updateToGame(hallId: String, gameModelData: GameModelData):Boolean
 
-    fun joinToBoard(gameId: String)//: Flow<BoardModelUi?>
+//    fun joinToBoard(gameId: String)//: Flow<BoardModelUi?>
     fun updateBoard(gameModelData: GameModelData)
 
-    fun joinToPlayer(gameId: String, player:PlayerType)//: Flow<PlayerModelUi?>
+//    fun joinToPlayer(gameId: String, player:PlayerType)//: Flow<PlayerModelUi?>
     fun updatePlayer(hallId: String, playerModelData: PlayerModelData)
 
     //HALLS

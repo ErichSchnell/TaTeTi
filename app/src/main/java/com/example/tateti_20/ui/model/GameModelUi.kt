@@ -65,15 +65,14 @@ data class BoardModelUi(
 }
 
 data class PlayerModelUi(
-    val user:UserModelUi = UserModelUi(),
+    val userId:String = "",
 
     val playerType: PlayerType = PlayerType.Empty,
     val victories: Int = 0,
     val resetGame: Boolean = false
 ) {
     fun toModelData(): PlayerModelData = PlayerModelData(
-        user = user.userId,
-
+        userId = userId,
         playerType = playerType.id,
         victories = victories,
         resetGame = resetGame

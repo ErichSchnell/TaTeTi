@@ -1,11 +1,14 @@
 package com.example.tateti_20.ui.game
 
 import android.util.Log
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tateti_20.data.network.model.GameModelData
+import com.example.tateti_20.domain.GetToHall
+import com.example.tateti_20.domain.GetUser
 import com.example.tateti_20.domain.JoinToHall
+import com.example.tateti_20.domain.UpdateGame
+import com.example.tateti_20.domain.UpdateUser
 //import com.example.tateti_20.domain.JoinToBoard
 //import com.example.tateti_20.domain.JoinToGame
 //import com.example.tateti_20.domain.JoinToPlayer
@@ -18,12 +21,11 @@ import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
-import com.google.firebase.firestore.ktx.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,7 +34,8 @@ private val TAG = "Erich"
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val joinToHall: JoinToHall,
-//    private val updateGame: UpdateGame,
+    private val getHall: GetToHall,
+    private val updateGame: UpdateGame,
 //
 //    private val joinToBoard: JoinToBoard,
 //    private val updateBoard: UpdateBoard,
@@ -40,8 +43,8 @@ class GameViewModel @Inject constructor(
 //    private val joinToPlayer: JoinToPlayer,
 //    private val updatePlayer: UpdatePlayer,
 //
-//    private val updateUser: UpdateUser,
-//    private val joinToUser: JoinToUser
+    private val getUser: GetUser,
+    private val setUser: UpdateUser
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<GameViewState>(GameViewState.LOADING)
@@ -53,8 +56,13 @@ class GameViewModel @Inject constructor(
     private val _winner = MutableStateFlow<PlayerType>(PlayerType.Empty)
     val winner: StateFlow<PlayerType> = _winner
 
-    private val _user = MutableStateFlow<UserModelUi?>(UserModelUi())
-    val user: StateFlow<UserModelUi?> = _user
+    private val _myUser = MutableStateFlow(UserModelUi())
+
+    private val _player1 = MutableStateFlow<UserModelUi?>(null)
+    val player1: StateFlow<UserModelUi?> = _player1
+
+    private val _player2 = MutableStateFlow<UserModelUi?>(null)
+    val player2: StateFlow<UserModelUi?> = _player2
 
     private val _victories = MutableStateFlow<PlayerVictories>(PlayerVictories())
     val victories: StateFlow<PlayerVictories> = _victories
@@ -65,72 +73,63 @@ class GameViewModel @Inject constructor(
     */
     fun initGame(userId: String, hallId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.i("erich", "userId: $userId \nhallId: $hallId")
+            Log.i("erich", "initGame: (userId: $userId \thallId: $hallId)")
             try {
-//                joinToHall(hallId)
-                joinToHall(hallId).collect {
-                    val result = it
-                    Log.i(TAG, "initGame result: $result")
+                _myUser.value = async{ getUser(userId) }.await()
+
+                if(_myUser.value.userEmail.isNotEmpty()){
+                    Log.i(TAG, "initGame _myUser.value: ${_myUser.value}")
+
+                    getGame(hallId)
                 }
+
             } catch (e: Exception) {
                 Log.i(TAG, "initGame error: ${e.message}")
             }
         }
     }
 
-
     /*
     *   GAME
     */
-    fun joinToGameInit(hallId: String) {
-        if (_user.value?.lastHall != hallId) joinLikeGuest(hallId)
+    fun getGame(hallId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = async{ getHall(hallId) }.await()
 
-        join(hallId)
-    }
-    private fun joinLikeGuest(hallId: String) {
-        viewModelScope.launch {
-//            joinToGame(hallId).take(1).collect {
-//                if (it != null) {
-//                    _game.value = it
-//
-//                    if (_user.value?.hallId == it.hallId) {
-//                        val currentPlayer = it.player1?.copy(nickname = _user.value?.nickname ?: "",)
-//                        updatePlayer(hallId,currentPlayer?.toModelData() ?: PlayerModelData())
-//                    } else {
-//                        var currentPlayer = if(it.player2 != null){
-//                            it.player2.copy(
-//                                userId = _user.value?.userId ?: "",
-//                                nickname = _user.value?.nickname ?: ""
-//                            )
-//                        } else {
-//                            _user.value?.toPlayer(PlayerType.SecondPlayer)
-//                        }
-//                        updateGame(it.copy(available = false).toModelData())
-//                        updatePlayer(hallId,currentPlayer?.toModelData() ?: PlayerModelData())
-//                    }
-//                }
-//            }
+            if (result.hallName.isNotEmpty()){
+
+                Log.i(TAG, "getGame result: ${result}")
+
+                when(_myUser.value.userId){
+                    result.player1?.userId -> {
+                        _player1.value = _myUser.value
+                    }
+                    result.player2?.userId -> {
+                        _player2.value = _myUser.value
+                    }
+                    else -> {
+                        if(result.player2 == null){
+                            _player2.value = _myUser.value
+                            _game.value = result.copy(player2 = _myUser.value.toPlayer(PlayerType.SecondPlayer))
+                            updateGame(result.hallId.orEmpty() ,_game.value?.toModelData() ?: GameModelData())
+                        }
+                    }
+                }
+
+                _uiState.value = GameViewState.GAME
+
+                join(hallId)
+            }
         }
     }
+
     private fun join(hallId: String) {
-        viewModelScope.launch {
-//            joinToGame(hallId).take(1).collect {
-//                if (it != null) {
-//                    _game.value = it
-//                    printResumeGame()
-//
-//                    Log.d(TAG, "join: ")
-//
-//                    joinBoard(hallId)
-//                    joinPlayer1(hallId)
-//                    joinPlayer2(hallId)
-//                    joinTurnPlayer(hallId)
-//
-//                    if (_uiState.value == GameViewState.LOADING) {
-//                        _uiState.value = GameViewState.GAME
-//                    }
-//                }
-//            }
+        viewModelScope.launch(Dispatchers.IO) {
+            joinToHall(hallId).collect{currentGame ->
+                currentGame.hallId?.let {
+                    _game.value = currentGame.copy(isGameReady = (currentGame.player2 != null))
+                }
+            }
         }
     }
     private fun joinBoard(hallId: String) {
@@ -210,7 +209,7 @@ class GameViewModel @Inject constructor(
     private fun setGameReady(){
         _game.value = _game.value?.copy(isGameReady = true)
     }
-    private fun isMyTurn(playerTurn: PlayerModelUi) = playerTurn.user.userId == _user.value?.userId
+    private fun isMyTurn(playerTurn: PlayerModelUi) = playerTurn.userId == _myUser.value?.userId
 
 
     fun onClickItem(position: Int) {
@@ -227,12 +226,12 @@ class GameViewModel @Inject constructor(
         }
     }
     private fun getEnemyPlayer(): PlayerModelUi? {
-        return if (game.value?.player1?.user?.userId == _user.value?.userId) game.value?.player2 else game.value?.player1
+        return if (game.value?.player1?.userId == _myUser.value?.userId) game.value?.player2 else game.value?.player1
     }
     private fun getPlayerType(): PlayerType? {
         return when {
-            game.value?.player1?.user?.userId == _user.value?.userId -> PlayerType.FirstPlayer
-            game.value?.player2?.user?.userId == _user.value?.userId -> PlayerType.SecondPlayer
+            game.value?.player1?.userId == _myUser.value?.userId -> PlayerType.FirstPlayer
+            game.value?.player2?.userId == _myUser.value?.userId -> PlayerType.SecondPlayer
             else -> null
         }
     }
@@ -246,11 +245,11 @@ class GameViewModel @Inject constructor(
                     _winner.value = PlayerType.FirstPlayer
 
                     if (getPlayerType() == PlayerType.FirstPlayer) {
-                        updateUserVictory(_user.value?.incVic()!!)
+                        updateUserVictory(_myUser.value?.incVic()!!)
                         updatePlayerVictory(_game.value?.player1)
                     }
                     else {
-                        updateUserVictory(_user.value?.incDef()!!)
+                        updateUserVictory(_myUser.value?.incDef()!!)
                     }
 
                 }
@@ -260,10 +259,10 @@ class GameViewModel @Inject constructor(
                     _winner.value = PlayerType.SecondPlayer
 
                     if (getPlayerType() == PlayerType.SecondPlayer) {
-                        updateUserVictory(_user.value?.incVic()!!)
+                        updateUserVictory(_myUser.value?.incVic()!!)
                         updatePlayerVictory(_game.value?.player2)
                     } else {
-                        updateUserVictory(_user.value?.incDef()!!)
+                        updateUserVictory(_myUser.value?.incDef()!!)
                     }
                 }
 
@@ -351,12 +350,12 @@ class GameViewModel @Inject constructor(
     }
 
     private fun printResumeUser() {
-        Log.d("printResume", "{_user.value: ${_user.value}")
-        Log.d("printResume", "{_user.value.userId: ${_user.value!!.userId}")
-        Log.d("printResume", "{_user.value.nickname: ${_user.value!!.userName}")
-        Log.d("printResume", "{_user.value.victories: ${_user.value!!.victories}")
-        Log.d("printResume", "{_user.value.defeats: ${_user.value!!.defeats}")
-        Log.d("printResume", "{_user.value.hallId: ${_user.value!!.lastHall}")
+        Log.d("printResume", "{_user.value: ${_myUser.value}")
+        Log.d("printResume", "{_user.value.userId: ${_myUser.value!!.userId}")
+        Log.d("printResume", "{_user.value.nickname: ${_myUser.value!!.userName}")
+        Log.d("printResume", "{_user.value.victories: ${_myUser.value!!.victories}")
+        Log.d("printResume", "{_user.value.defeats: ${_myUser.value!!.defeats}")
+        Log.d("printResume", "{_user.value.hallId: ${_myUser.value!!.lastHall}")
         Log.d(
             "printResume",
             "**************************************************************************"

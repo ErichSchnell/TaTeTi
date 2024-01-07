@@ -5,8 +5,6 @@ import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.HallsModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
-import com.example.tateti_20.ui.model.UserModelUi
-import com.google.firebase.firestore.PropertyName
 
 data class HallsModelData (
     val halls: List<GameModelData?>? = null,
@@ -24,14 +22,14 @@ data class GameModelData (
     val player2: PlayerModelData? = null,
     val playerTurn: PlayerModelData? = null,
 
-    @field:PropertyName("isPublic") val isPublic:Boolean? = null,
+    val isPublic:Boolean? = null,
     val password:String? = null,
 
     val isFinished:Boolean? = null,
     val isVisible:Boolean? = null,
     val winner:Int? = null,
 ) {
-    fun toModelUi(hallId:String): GameModelUi {
+    fun toModelUi(hallId: String): GameModelUi {
         return GameModelUi(
             hallId = hallId,
             hallName = hallName.orEmpty(),
@@ -43,7 +41,7 @@ data class GameModelData (
             playerTurn = playerTurn?.toModelUi(),
 
             isPublic = isPublic ?: false,
-            password = password ?: "1234",
+            password = password ?: "0000",
 
             isFinished = isFinished ?: true,
             isVisible = isVisible ?: false,
@@ -62,7 +60,7 @@ data class BoardModelData(
 
 
 data class PlayerModelData(
-    val user: String? = null,
+    val userId: String? = null,
 
     val playerType:Int? = null,
     val victories:Int? = null,
@@ -70,7 +68,7 @@ data class PlayerModelData(
 ) {
     fun toModelUi(): PlayerModelUi {
         return PlayerModelUi(
-            user = UserModelUi(),
+            userId = userId.orEmpty(),
             playerType = PlayerType.getPlayerById(playerType ?: 0),
             victories = victories ?: 0,
             resetGame = resetGame ?: false

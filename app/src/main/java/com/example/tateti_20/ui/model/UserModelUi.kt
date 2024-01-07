@@ -22,7 +22,7 @@ data class UserModelUi(
         lastHall = lastHall,
     )
     fun toPlayer(playerType: PlayerType): PlayerModelUi = PlayerModelUi(
-        user = this,
+        userId = userId,
         playerType = playerType
     )
 

@@ -5,8 +5,8 @@ import javax.inject.Inject
 
 class UpdateGame @Inject constructor(private val dataServerService: DataServerService) {
 
-    operator fun invoke(gameModelData: GameModelData){
-        dataServerService.updateGame(gameModelData)
+    suspend operator fun invoke(hallId:String, gameModelData: GameModelData){
+        dataServerService.updateToGame(hallId, gameModelData)
     }
 
 }
