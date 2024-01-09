@@ -154,9 +154,6 @@ class GameViewModel @Inject constructor(
             }
         }
     }
-    private fun setGameReady(){
-        _game.value = _game.value?.copy(isGameReady = true)
-    }
     private fun isMyTurn(playerTurn: PlayerModelUi?) = playerTurn?.userId == _myUser.value.userId
 
 
@@ -262,7 +259,6 @@ class GameViewModel @Inject constructor(
             return true
         }
     }
-
     private fun updateUserVictory(currentUser: UserModelUi) {
         viewModelScope.launch {
             setUser(currentUser)
