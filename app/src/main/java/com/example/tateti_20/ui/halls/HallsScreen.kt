@@ -18,20 +18,29 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.GameModelUi
@@ -129,9 +138,11 @@ fun ItemHall(hall: GameModelUi?, onClickHall: (String) -> Unit) {
     if (hall == null) return
     if (hall.hallId == null) return
 
+    var joinGameF by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
-            .clickable { onClickHall(hall.hallId) }
+            .clickable { joinGameF = true }
             .height(100.dp)
             .padding(16.dp)
             .border(2.dp, Orange1, RoundedCornerShape(24.dp))
@@ -162,6 +173,56 @@ fun ItemHall(hall: GameModelUi?, onClickHall: (String) -> Unit) {
             hall.player1?.userName?.let { name -> NameJugador(name) }
         }
     }
+    if (joinGameF){
+        joinGameF = InsertPassword(hall, onClickHall = onClickHall)
+    }
+}
+
+@Composable
+fun InsertPassword(hall: GameModelUi, onClickHall: (String) -> Unit):Boolean {
+    var pass by remember {
+        mutableStateOf("")
+    }
+    var joinToGameState by remember {
+        mutableStateOf(true)
+    }
+
+    if (hall.isPublic){
+        joinToGameState = false
+        onClickHall(hall.hallId.orEmpty())
+    } else {
+        Dialog(onDismissRequest = { joinToGameState = false }) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                OutlinedTextField(
+                    label = { Text(text = "Password", color = Orange2) },
+                    modifier = Modifier,
+                    value = pass,
+                    onValueChange = { pass = it },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Orange1,
+                        textColor = Accent,
+                        focusedBorderColor = Orange1,
+                        unfocusedBorderColor = Orange2
+                    )
+                )
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Orange1,
+                        contentColor = Accent
+                    ),
+                    enabled = (hall.password == pass),
+                    onClick = {
+                        joinToGameState = false
+                        onClickHall(hall.hallId.orEmpty())
+                    }
+                ) {
+                    Text(text = "Join To Game")
+                }
+            }
+
+        }
+    }
+    return joinToGameState
 }
 
 @Composable
