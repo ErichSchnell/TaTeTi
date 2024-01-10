@@ -2,17 +2,9 @@ package com.example.tateti_20.data.network.model
 
 import com.example.tateti_20.ui.model.BoardModelUi
 import com.example.tateti_20.ui.model.GameModelUi
-import com.example.tateti_20.ui.model.HallsModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 
-data class HallsModelData (
-    val halls: List<GameModelData?>? = null,
-) {
-    fun toModelUi() = HallsModelUi (
-        halls = halls?.map{ it?.toModelUi("") } ?: mutableListOf()
-    )
-}
 data class GameModelData (
     val hallName: String? = null,
 
@@ -61,6 +53,7 @@ data class BoardModelData(
 
 data class PlayerModelData(
     val userId: String? = null,
+    val userName: String? = null,
 
     val playerType:Int? = null,
     val victories:Int? = null,
@@ -69,6 +62,7 @@ data class PlayerModelData(
     fun toModelUi(): PlayerModelUi {
         return PlayerModelUi(
             userId = userId.orEmpty(),
+            userName = userName.orEmpty(),
             playerType = PlayerType.getPlayerById(playerType ?: 0),
             victories = victories ?: 0,
             resetGame = resetGame ?: false

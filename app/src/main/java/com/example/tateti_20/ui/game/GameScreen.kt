@@ -63,8 +63,6 @@ fun GameScreen(
     val uiState by gameViewModel.uiState.collectAsState()
     val game:GameModelUi? by gameViewModel.game.collectAsState()
     val winner:PlayerType by gameViewModel.winner.collectAsState()
-    val player1 by gameViewModel.player1.collectAsState()
-    val player2 by gameViewModel.player2.collectAsState()
 
     LaunchedEffect(true){ gameViewModel.initGame(userId, hallId) }
 
@@ -72,12 +70,12 @@ fun GameScreen(
         GameViewState.LOADING -> Loading()
 
         GameViewState.GAME -> {
-            Board(game, player1, player2){ position ->
+            Board(game){ position ->
                 gameViewModel.onClickItem(position)
             }
         }
         GameViewState.FINISH -> {
-            FinishGame(game!!, player1, player2, winner,
+            FinishGame(game!!, winner,
                 resetGame= { gameViewModel.resetGame() },
                 closeGame = { gameViewModel.closeGame() }
             )
@@ -103,7 +101,7 @@ fun Loading() {
 }
 
 @Composable
-fun Board(game: GameModelUi?, player1: UserModelUi?, player2: UserModelUi?, onClickItem: (Int) -> Unit) {
+fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
 
     if(game == null) return
     if(game.hallId == null) return
@@ -151,9 +149,9 @@ fun Board(game: GameModelUi?, player1: UserModelUi?, player2: UserModelUi?, onCl
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ){
-                Puntaje(player1, game.player1)
+                Puntaje(game.player1)
                 Spacer(modifier = Modifier.width(130.dp))
-                Puntaje(player2, game.player2)
+                Puntaje(game.player2)
             }
 
             Spacer(modifier = Modifier
@@ -228,10 +226,10 @@ fun GameItem(playerType: PlayerType, onClickItem:()->Unit) {
 }
 
 @Composable
-fun FinishGame(game: GameModelUi, player1: UserModelUi?, player2: UserModelUi?, winner:PlayerType, resetGame:()-> Unit, closeGame:()->Unit) {
+fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeGame:()->Unit) {
     val currentWinner = when (winner) {
-        PlayerType.FirstPlayer -> player1?.userName
-        PlayerType.SecondPlayer -> player2?.userName
+        PlayerType.FirstPlayer -> game.player1?.userName
+        PlayerType.SecondPlayer -> game.player2?.userName
         PlayerType.Empty -> "EMPATE"
     }
     val title = if(winner != PlayerType.Empty) "¡FELICITACIONES!" else "¡MUY CERCA!"
@@ -270,9 +268,9 @@ fun FinishGame(game: GameModelUi, player1: UserModelUi?, player2: UserModelUi?, 
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ){
-                    Puntaje(player1, game.player1)
+                    Puntaje(game.player1)
                     Spacer(modifier = Modifier.width(130.dp))
-                    Puntaje(player2, game.player2)
+                    Puntaje(game.player2)
                 }
             }
             Spacer(modifier = Modifier
@@ -291,7 +289,7 @@ fun FinishGame(game: GameModelUi, player1: UserModelUi?, player2: UserModelUi?, 
                 .height(24.dp))
 
             val waitingPlayer = if(game.player1?.resetGame == true || game.player2?.resetGame == true) {
-                if (game.player1?.resetGame == true) "Esperando ${player2?.userName}" else "Esperando ${player1?.userName}"
+                if (game.player1?.resetGame == true) "Esperando ${game.player2?.userName}" else "Esperando ${game.player1?.userName}"
             } else {
                 ""
             }
@@ -322,11 +320,11 @@ fun FinishGame(game: GameModelUi, player1: UserModelUi?, player2: UserModelUi?, 
     }
 }
 @Composable
-fun Puntaje(user: UserModelUi? ,player: PlayerModelUi?) {
+fun Puntaje(player: PlayerModelUi?) {
     val currentVictories = player?.victories?.toString() ?: "0"
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 //        user?.let {
-            Text(text = user?.userName.orEmpty(), fontSize = 20.sp, color = Orange1, fontWeight = FontWeight.Normal)
+            Text(text = player?.userName.orEmpty(), fontSize = 20.sp, color = Orange1, fontWeight = FontWeight.Normal)
             Text(text = currentVictories, fontSize = 48.sp, color = Orange2, fontWeight = FontWeight.Bold)
 //        }
     }

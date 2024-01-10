@@ -23,6 +23,7 @@ data class UserModelUi(
     )
     fun toPlayer(playerType: PlayerType): PlayerModelUi = PlayerModelUi(
         userId = userId,
+        userName = userName,
         playerType = playerType
     )
 

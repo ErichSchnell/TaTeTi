@@ -4,38 +4,42 @@ import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
 import com.example.tateti_20.ui.model.GameModelUi
+//import com.example.tateti_20.ui.model.HallsModelUi
 import com.example.tateti_20.ui.model.UserModelUi
 import kotlinx.coroutines.flow.Flow
 
 interface DataServerService {
 
-    //USER
+    /*
+    ------------------ USER ------------------
+    */
     suspend fun createUser(userId:String, userModelData: UserModelData): Boolean
     suspend fun getUser(userId: String): UserModelUi?
     suspend fun updateUser(userId: String, userData: UserModelData):Boolean
+    fun joinToUser(userId: String)
+    /*
+    ------------------------------------
+    */
 
 
+    /*
+    ------------------ GAME ------------------
+    */
     suspend fun createHall(gameModelData: GameModelData): String
-
-
-
-    fun joinToUser(userId: String)//: Flow<UserModelUi?>
-
-
-
-    //GAME
     suspend fun getToHall(gameId: String): GameModelUi
-    suspend fun joinToHall(gameId: String): Flow<GameModelUi>//Flow<List<Int?>?>
+    suspend fun joinToHall(gameId: String): Flow<GameModelUi>
     suspend fun updateToGame(hallId: String, gameModelData: GameModelData):Boolean
+    /*
+    ------------------------------------
+    */
 
-//    fun joinToBoard(gameId: String)//: Flow<BoardModelUi?>
-    fun updateBoard(gameModelData: GameModelData)
-
-//    fun joinToPlayer(gameId: String, player:PlayerType)//: Flow<PlayerModelUi?>
-    fun updatePlayer(hallId: String, playerModelData: PlayerModelData)
-
-    //HALLS
-    fun getHalls()//: Flow<HallsModelUi?>
+    /*
+    ------------------ HALLS ------------------
+    */
+    fun getHalls(): Flow<List<GameModelUi>>
+    /*
+    ------------------------------------
+    */
 
 
 

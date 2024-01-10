@@ -10,6 +10,7 @@ import com.example.tateti_20.ui.model.UserModelUi
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -84,9 +85,6 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             }
         }
     }
-
-
-
     override fun joinToUser(userId: String) {
     }
     /*
@@ -137,8 +135,6 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
                 }.addOnFailureListener { cancellableContinuation.resumeWithException(it) }
         }
     }
-
-
     override suspend fun joinToHall(gameId: String): Flow<GameModelUi> = callbackFlow {
         // Define el listener para los cambios en el documento
 
@@ -163,11 +159,6 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
         // Cierre el listener cuando se cancela el flujo
         awaitClose { registration.remove() }
     }
-    /*
-                * --------------------------------------
-                * */
-
-
     override suspend fun updateToGame(hallId: String, gameModelData: GameModelData):Boolean {
         val hall = hashMapOf(
             "hallName" to gameModelData.hallName,
@@ -195,19 +186,6 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             }
         }
     }
-
-    override fun updateBoard(gameModelData: GameModelData) {
-    }
-
-    override fun updatePlayer(hallId: String, playerModelData: PlayerModelData) {
-    }
-
-    override fun getHalls() {//: Flow<HallsModelUi?>
-    }
-
-
-
-
     private fun getGameModelData(snapshot: DocumentSnapshot):GameModelData{
 
         val currentGame = snapshot.toObject(GameModelData::class.java) ?: GameModelData()
@@ -226,6 +204,47 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
         return currentGame
     }
+    /*
+                * --------------------------------------
+                * */
+
+
+    /*
+    ------------------ HALLS ------------------
+    */
+    override fun getHalls(): Flow<List<GameModelUi>> = callbackFlow {
+        // Define el listener para los cambios en el documento
+
+        val listener = EventListener<QuerySnapshot> { collection, exception ->
+            if (exception != null) {
+                close(exception)
+            } else if (collection != null) {
+
+                val halls:MutableList<GameModelUi> = mutableListOf()
+                collection.documents.forEach {
+                    halls.add(it.toObject<GameModelData>()?.toModelUi(it.id) ?: GameModelData().toModelUi(""))
+                }
+
+                val currentGameData:List<GameModelUi> = halls
+
+                Log.i("erich", "joinToHall snapshot: ${collection.documents}")
+                Log.i("erich", "joinToHall result: $currentGameData ")
+
+
+                trySend(currentGameData)
+            }
+        }
+
+        // Agrega el listener al documento
+        val registration = firestore.collection(PATH_HALL).whereEqualTo("isVisible" , true).addSnapshotListener(listener)
+
+        // Cierre el listener cuando se cancela el flujo
+        awaitClose { registration.remove() }
+    }
+    /*
+                * --------------------------------------
+                * */
+
 }
 
 

@@ -23,6 +23,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,14 +41,14 @@ fun HallsScreen(
     navigateToMach: (String, String) -> Unit,
     userId: String
 ) {
-    val uiState = hallsViewModel.uiState.collectAsState()
-    val listHalls = hallsViewModel.halls.collectAsState()
+    val uiState by hallsViewModel.uiState.collectAsState()
+    val listHalls by hallsViewModel.halls.collectAsState()
 
 
-    when (uiState.value) {
+    when (uiState) {
         HallsViewState.LOADING -> Loading()
         HallsViewState.HALLS -> {
-            Halls(listHalls.value){
+            Halls(listHalls){
                 hallsViewModel.joinGame(it,userId, navigateToMach)
             }
         }
@@ -140,8 +141,10 @@ fun ItemHall(hall: GameModelUi?,onClickHall:(String)->Unit) {
                     .fillMaxWidth()
                     .weight(1f)
             )
-            if (hall.player1 != null) NameJugador("") //hall.player1.user?.userName.orEmpty()
-            if (hall.player2 != null) NameJugador("") //hall.player2.user?.userName.orEmpty()
+
+            hall.player1?.userName?.let {name -> NameJugador(name)}
+            hall.player2?.userName?.let {name -> NameJugador(name)}
+
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -1,6 +1,8 @@
 package com.example.tateti_20.ui.game
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.model.GameModelData
@@ -59,14 +61,8 @@ class GameViewModel @Inject constructor(
     private val _myUser = MutableStateFlow(UserModelUi())
 
     private val _player1 = MutableStateFlow<UserModelUi?>(null)
-    val player1: StateFlow<UserModelUi?> = _player1
 
     private val _player2 = MutableStateFlow<UserModelUi?>(null)
-    val player2: StateFlow<UserModelUi?> = _player2
-
-    private val _victories = MutableStateFlow<PlayerVictories>(PlayerVictories())
-    val victories: StateFlow<PlayerVictories> = _victories
-
 
     /*
     *   USER
@@ -105,11 +101,12 @@ class GameViewModel @Inject constructor(
                 }
                 if(_myUser.value.userId != result.player1?.userId &&  result.player2 == null){
                     _player2.value = _myUser.value
-                    _game.value = result.copy(player2 = _myUser.value.toPlayer(PlayerType.SecondPlayer))
+                    _game.value = result.copy(
+                        player2 = _myUser.value.toPlayer(PlayerType.SecondPlayer),
+                        isVisible = false
+                    )
                     updateGame(result.hallId.orEmpty() ,_game.value?.toModelData() ?: GameModelData())
                 }
-
-                _uiState.value = GameViewState.GAME
 
                 join(hallId)
             }
@@ -117,12 +114,20 @@ class GameViewModel @Inject constructor(
     }
 
     private fun join(hallId: String) {
+        var showGame = true
         viewModelScope.launch(Dispatchers.IO) {
             joinToHall(hallId).collect{currentGame ->
                 currentGame.hallId?.let {
 
+                    Log.i(TAG, "join: update: $currentGame")
 
-                    Log.i(TAG, "join: update")
+                    if(_player1.value == null && currentGame.player1 != null){
+                        _player1.value = async { getUser(currentGame.player1.userId)}.await()
+                    }
+                    if(_player2.value == null && currentGame.player2 != null){
+                        _player2.value = async { getUser(currentGame.player2.userId)}.await()
+                    }
+
                     _game.value = currentGame.copy(
                         isGameReady = (currentGame.player2 != null),
                         isMyTurn = isMyTurn(currentGame.playerTurn)
@@ -131,11 +136,11 @@ class GameViewModel @Inject constructor(
                     verifyWinner()
                     resetBoard()
 
-                    if(_player1.value == null && currentGame.player1 != null){
-                        _player1.value = async { getUser(currentGame.player1.userId)}.await()
-                    }
-                    if(_player2.value == null && currentGame.player2 != null){
-                        _player2.value = async { getUser(currentGame.player2.userId)}.await()
+
+
+                    if (showGame){
+                        showGame = false
+                        _uiState.value = GameViewState.GAME
                     }
                 }
             }
@@ -299,7 +304,6 @@ class GameViewModel @Inject constructor(
 
         Log.i("printResume", "{_uiState.value: ${_uiState.value}")
         Log.i("printResume", "{_winner.value: ${_winner.value}")
-        Log.i("printResume", "{_victories.value: ${_victories.value}")
         Log.e("printResume", "{_game.value: ${_game.value}")
         Log.e("printResume", "{_game.value.hallId: ${_game.value!!.hallId}")
         Log.e("printResume", "{_game.value.hallName: ${_game.value!!.hallName}")

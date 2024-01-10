@@ -125,7 +125,7 @@ class HomeViewModel @Inject constructor(
     */
 
     fun viewHalls(navigateToHalls: (String) -> Unit) {
-//        navigateToHalls(_user.value.userId)
+        navigateToHalls(_user.value.userId)
     }
 
 
