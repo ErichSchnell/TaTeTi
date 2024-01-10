@@ -222,7 +222,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
                 val halls:MutableList<GameModelUi> = mutableListOf()
                 collection.documents.forEach {
-                    halls.add(it.toObject<GameModelData>()?.toModelUi(it.id) ?: GameModelData().toModelUi(""))
+                    halls.add(getGameModelData(it).toModelUi(it.id))
                 }
 
                 val currentGameData:List<GameModelUi> = halls
