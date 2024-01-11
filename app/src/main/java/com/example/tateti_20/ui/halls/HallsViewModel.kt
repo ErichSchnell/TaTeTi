@@ -30,10 +30,8 @@ class HallsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getHalls().collect{
                 Log.d(TAG, "init List<GameModelUi>: $it")
-                if (it.isNotEmpty()){
-                    _halls.value = it
-                    _uiState.value = HallsViewState.HALLS
-                }
+                _halls.value = it
+                _uiState.value = HallsViewState.HALLS
             }
         }
     }

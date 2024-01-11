@@ -348,79 +348,82 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        Row(verticalAlignment = Alignment.CenterVertically){
-            Column() {
-
-                OutlinedTextField(
-                    label = { Text(text = "Hall Name", color = Orange2) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                    value = nameNewHalls,
-                    onValueChange = { nameNewHalls = it },
-                    maxLines = 1,
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    },
-                    trailingIcon = {
-                        val icon = if (isPublic) R.drawable.ic_lock_open else R.drawable.ic_lock
-                        IconButton(onClick = { isPublic = !isPublic }) {
-                            Icon(
-                                painter = painterResource(id = icon),
-                                contentDescription = null,
-                                tint = Orange2
-                            )
-                        }
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Orange1,
-                        textColor = Accent,
-                        focusedBorderColor = Orange1,
-                        unfocusedBorderColor = Orange2
+        Column() {
+            OutlinedTextField(
+                label = { Text(text = "Hall Name", color = Orange2) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                value = nameNewHalls,
+                onValueChange = { nameNewHalls = it },
+                maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
                     )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                AnimatedContent(targetState = !isPublic, label = "") {
-                    if(it){
-                        OutlinedTextField(
-                            label = { Text(text = "Password", color = Orange2) },
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 4.dp, bottom = 8.dp),
-                            value = password,
-                            onValueChange = { password = it },
-                            maxLines = 1,
-                            singleLine = true,
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            },
-                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                            trailingIcon = {
-                                val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
-                                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                                    Icon(
-                                        painter = painterResource(id = icon),
-                                        contentDescription = null,
-                                        tint = Orange2
-                                    )
-                                }
-                            },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                cursorColor = Orange1,
-                                textColor = Accent,
-                                focusedBorderColor = Orange1,
-                                unfocusedBorderColor = Orange2
-                            )
+                },
+                trailingIcon = {
+                    val icon = if (isPublic) R.drawable.ic_lock_open else R.drawable.ic_lock
+                    IconButton(onClick = { isPublic = !isPublic }) {
+                        Icon(
+                            painter = painterResource(id = icon),
+                            contentDescription = null,
+                            tint = Orange2
                         )
                     }
+                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    cursorColor = Orange1,
+                    textColor = Accent,
+                    focusedBorderColor = Orange1,
+                    unfocusedBorderColor = Orange2
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AnimatedContent(targetState = !isPublic, label = "") {
+                if(it){
+                    OutlinedTextField(
+                        label = { Text(text = "Password", color = Orange2) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 4.dp, bottom = 8.dp),
+                        value = password,
+                        onValueChange = { password = it },
+                        maxLines = 1,
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(id = icon),
+                                    contentDescription = null,
+                                    tint = Orange2
+                                )
+                            }
+                        },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Orange1,
+                            textColor = Accent,
+                            focusedBorderColor = Orange1,
+                            unfocusedBorderColor = Orange2
+                        )
+                    )
                 }
             }
         }
+        
 
 
         Button(
@@ -449,9 +452,12 @@ fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
+        Spacer(modifier = Modifier.height(24.dp))
         OutlinedTextField(
             label = { Text(text = "Hall ID", color = Orange2) },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             value = text,
             onValueChange = { text = it },
             maxLines = 1,
@@ -470,6 +476,7 @@ fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
                 unfocusedBorderColor = Orange2
             )
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.padding(bottom = 24.dp),
             verticalAlignment = Alignment.CenterVertically

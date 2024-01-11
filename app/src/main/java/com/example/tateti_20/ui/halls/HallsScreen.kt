@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,6 +30,9 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,6 +52,7 @@ import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
+import com.example.tateti_20.ui.theme.BackgroundTitleHall
 import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
 
@@ -96,7 +103,7 @@ fun Halls(listHalls: List<GameModelUi?>?, onClickHall: (String) -> Unit) {
             .background(Background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Title()
+//        Title()
         ListHalls(listHalls, onClickHall)
     }
 }
@@ -127,7 +134,27 @@ fun ListHalls(listHalls: List<GameModelUi?>?, onClickHall: (String) -> Unit) {
         )
 
     } else {
-        Text(text = "there isn't hall available.")
+        Column (Modifier.fillMaxSize()){
+            Spacer(modifier = Modifier.weight(1f))
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+//                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text(
+                    text = "there isn't hall available.",
+                    fontSize = 18.sp,
+                    color = Orange2
+                )
+                CircularProgressIndicator(
+                    modifier = Modifier.size(28.dp).padding(start = 8.dp),
+                    color = Orange2,
+                    backgroundColor = Orange1,
+                    strokeWidth = 2.dp
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 }
 
@@ -143,9 +170,9 @@ fun ItemHall(hall: GameModelUi?, onClickHall: (String) -> Unit) {
     Card(
         modifier = Modifier
             .clickable { joinGameF = true }
-            .height(100.dp)
-            .padding(16.dp)
-            .border(2.dp, Orange1, RoundedCornerShape(24.dp))
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 8.dp)
+            .border(2.dp, Orange1, RoundedCornerShape(12.dp))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -154,18 +181,27 @@ fun ItemHall(hall: GameModelUi?, onClickHall: (String) -> Unit) {
 
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
+
             ) {
 
-                Spacer(modifier = Modifier.weight(0.25f))
-                NameHall(hall.hallName)
-
                 Spacer(modifier = Modifier.weight(1f))
-                if (hall.isPublic) Icon(painter = painterResource(id = R.drawable.ic_lock_open), tint = Accent, contentDescription = "")
+                Text(
+                    modifier = Modifier.padding(top = 2.dp),
+                    text = hall.hallName.uppercase(),
+                    fontSize = 24.sp,
+                    color = Orange2,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                if (hall.isPublic) Icon(modifier = Modifier, painter = painterResource(id = R.drawable.ic_lock_open), tint = Orange2, contentDescription = "")
                 else Icon(painter = painterResource(id = R.drawable.ic_lock), tint = Orange2, contentDescription = "")
-                Spacer(modifier = Modifier.weight(0.25f))
+                Spacer(modifier = Modifier.width(20.dp))
             }
 
             Divider(Modifier.fillMaxWidth(), color = Orange1)
@@ -177,7 +213,6 @@ fun ItemHall(hall: GameModelUi?, onClickHall: (String) -> Unit) {
         joinGameF = InsertPassword(hall, onClickHall = onClickHall)
     }
 }
-
 @Composable
 fun InsertPassword(hall: GameModelUi, onClickHall: (String) -> Unit):Boolean {
     var pass by remember {
@@ -239,21 +274,21 @@ fun NameHall(name: String) {
 @Composable
 fun NameJugador(name: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "•",
-            fontSize = 34.sp,
-            color = Accent,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 8.dp)
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
         )
         Text(
             text = name,
             fontSize = 20.sp,
-            color = Orange2,
+            color = Accent,
             fontWeight = FontWeight.Light,
             modifier = Modifier.padding(start = 8.dp)
         )
