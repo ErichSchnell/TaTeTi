@@ -179,6 +179,25 @@ class HomeViewModel @Inject constructor(
             _loading.value = false
         }
     }
+    fun setChangePassword(email: String) {
+        if (email.isNotEmpty()){
+            viewModelScope.launch(Dispatchers.IO) {
+                _loading.value = true
+                try {
+                    if (authService.changePassword(email)){
+                        _showToast.value = "Email Sent"
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("Erich", "${e.message}")
+                    _showToast.value = "Email Incorrect"
+                }
+                _loading.value = false
+            }
+        } else {
+            _showToast.value = "Insert Email"
+        }
+    }
 
     /*
     *------- Google ---------
@@ -275,6 +294,7 @@ class HomeViewModel @Inject constructor(
     fun clearNavigateToHall() {
         _navigateToHall.value = _navigateToHall.value.copy(false)
     }
+
     /*
         *---------------------------------------
         */

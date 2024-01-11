@@ -16,6 +16,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class AuthService @Inject constructor(private val firebaseAuth: FirebaseAuth, @ApplicationContext private val context: Context) {
+
+    /*
+      ----------------------- EMAIL -----------------------
+     */
     suspend fun login(email: String, password: String): FirebaseUser? {
         return suspendCancellableCoroutine { cancellableContinuation ->
             firebaseAuth.signInWithEmailAndPassword(email, password)
@@ -28,7 +32,6 @@ class AuthService @Inject constructor(private val firebaseAuth: FirebaseAuth, @A
                 }
         }
     }
-
     suspend fun register(email: String, password: String): FirebaseUser? {
         return suspendCancellableCoroutine { cancellableContinuation ->
             firebaseAuth.createUserWithEmailAndPassword(email, password)
@@ -40,27 +43,49 @@ class AuthService @Inject constructor(private val firebaseAuth: FirebaseAuth, @A
                 }
         }
     }
-
-    fun isUserLogged(): Boolean {
-        return getCurrentUser() != null
+    suspend fun changePassword(email: String): Boolean {
+        return suspendCancellableCoroutine { cancellableContinuation ->
+            firebaseAuth.sendPasswordResetEmail(email)
+                .addOnSuccessListener {
+                    cancellableContinuation.resume(true)
+                }
+                .addOnFailureListener {
+                    cancellableContinuation.resumeWithException(it)
+                }
+        }
     }
-    fun logout() {
-        firebaseAuth.signOut()
-    }
+    /*
+      ---------------------------------------------------
+     */
 
-    private fun getCurrentUser() = firebaseAuth.currentUser
+
+    /*
+      ----------------------- GOOGLE -----------------------
+     */
     fun getGoogleClient(): GoogleSignInClient {
         val gso = GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id)).requestEmail().build()
         return GoogleSignIn.getClient(context,gso)
     }
-
     suspend fun loginWithGoogle(idToken: String): FirebaseUser? {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         return completeRegisterWithCredential(credential)
-    }
+    }/*
+      ------------------------------------------------------
+     */
 
+
+    /*
+      ----------------------- GENERAL -----------------------
+     */
+    fun isUserLogged(): Boolean {
+        return getCurrentUser() != null
+    }
+    fun logout() {
+        firebaseAuth.signOut()
+    }
+    private fun getCurrentUser() = firebaseAuth.currentUser
     private suspend fun completeRegisterWithCredential(credential: AuthCredential): FirebaseUser?{
         return suspendCancellableCoroutine { cancellableContinuation ->
             firebaseAuth.signInWithCredential(credential).addOnSuccessListener {
@@ -70,4 +95,7 @@ class AuthService @Inject constructor(private val firebaseAuth: FirebaseAuth, @A
             }
         }
     }
+    /*
+      ---------------------------------------------------
+     */
 }

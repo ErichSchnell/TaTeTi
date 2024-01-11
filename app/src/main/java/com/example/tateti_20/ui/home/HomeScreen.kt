@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -30,11 +31,17 @@ import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,6 +57,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,6 +66,7 @@ import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.UserModelUi
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
+import com.example.tateti_20.ui.theme.HalfAccent
 import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -110,6 +120,9 @@ fun HomeScreen(
                         homeViewModel.login(email, password)
                     },
                     onClickSingUp = { homeViewModel.getSingUp() },
+                    onClickChangePassword = { email ->
+                        homeViewModel.setChangePassword(email)
+                                            },
                     onGoogleLoginSelected = {
                         homeViewModel.onGoogleLoginSelected{
                             googleLauncher.launch(it.signInIntent)
@@ -228,7 +241,7 @@ fun Home(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Create Hall",
-                    color = if (!createGame) Accent else Background
+                    color = if (!createGame) Accent else HalfAccent
                 )
                 Switch(
                     checked = createGame,
@@ -240,7 +253,7 @@ fun Home(
                 )
                 Text(
                     text = "Join Game",
-                    color = if (createGame) Accent else Background
+                    color = if (createGame) Accent else HalfAccent
                 )
             }
             Card(
@@ -328,6 +341,7 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
     var nameNewHalls by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPublic by remember { mutableStateOf(true) }
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -339,9 +353,28 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
 
                 OutlinedTextField(
                     label = { Text(text = "Hall Name", color = Orange2) },
-                    modifier = Modifier,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     value = nameNewHalls,
                     onValueChange = { nameNewHalls = it },
+                    maxLines = 1,
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        val icon = if (isPublic) R.drawable.ic_lock_open else R.drawable.ic_lock
+                        IconButton(onClick = { isPublic = !isPublic }) {
+                            Icon(
+                                painter = painterResource(id = icon),
+                                contentDescription = null,
+                                tint = Orange2
+                            )
+                        }
+                    },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Orange1,
                         textColor = Accent,
@@ -354,9 +387,29 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
                     if(it){
                         OutlinedTextField(
                             label = { Text(text = "Password", color = Orange2) },
-                            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 4.dp, bottom = 8.dp),
                             value = password,
                             onValueChange = { password = it },
+                            maxLines = 1,
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                    Icon(
+                                        painter = painterResource(id = icon),
+                                        contentDescription = null,
+                                        tint = Orange2
+                                    )
+                                }
+                            },
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 cursorColor = Orange1,
                                 textColor = Accent,
@@ -364,39 +417,6 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
                                 unfocusedBorderColor = Orange2
                             )
                         )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Card (
-                modifier = Modifier
-                    .size(35.dp)
-                    .clickable { isPublic = !isPublic },
-//                    .border(1.dp, Orange2, RoundedCornerShape(4.dp)),
-                backgroundColor = Background,
-                elevation = 4.dp
-            ){
-                AnimatedContent(targetState = isPublic, label = "") {
-                    when(it){
-                        true -> {
-                            Icon(
-                                modifier = Modifier.padding(4.dp).clickable { isPublic = !isPublic },
-                                painter = painterResource(id = R.drawable.ic_lock_open),
-                                tint = Orange2,
-                                contentDescription = ""
-                            )
-                        }
-                        false -> {
-                            Icon(
-                                modifier = Modifier.padding(4.dp).clickable {
-                                    isPublic = !isPublic
-                                    password = ""
-                                },
-                                painter = painterResource(id = R.drawable.ic_lock),
-                                tint = Orange2,
-                                contentDescription = ""
-                            )
-                        }
                     }
                 }
             }
@@ -431,9 +451,18 @@ fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
     ) {
         OutlinedTextField(
             label = { Text(text = "Hall ID", color = Orange2) },
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
             value = text,
             onValueChange = { text = it },
+            maxLines = 1,
+            singleLine = true,
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 cursorColor = Orange1,
                 textColor = Accent,
@@ -470,13 +499,22 @@ fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
     }
 }
 
+
+
+
+/*
+* ------------------ Authetication -----------------
+* */
 @Composable
 fun Login(modifier: Modifier, loading: Boolean,
           onClickLogin: (String, String) -> Unit,
           onClickSingUp: () -> Unit,
-          onGoogleLoginSelected: () -> Unit) {
+          onClickChangePassword: (String) -> Unit,
+          onGoogleLoginSelected: () -> Unit
+) {
     var email by remember { mutableStateOf("schnellerich@hotmail.com") }
     var password by remember { mutableStateOf("1234566") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -501,6 +539,14 @@ fun Login(modifier: Modifier, loading: Boolean,
                     unfocusedBorderColor = Orange1
                 ),
                 maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
             OutlinedTextField(
@@ -517,24 +563,52 @@ fun Login(modifier: Modifier, loading: Boolean,
                     unfocusedBorderColor = Orange1
                 ),
                 maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            painter = painterResource(id = icon),
+                            contentDescription = null,
+//                            tint = Orange1
+                        )
+                    }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
-            Row(Modifier.fillMaxWidth()) {
-                Spacer(
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)) {
+                Text(
+                    text = "Forgot Password?",
+                    color = Accent,
+                    fontSize = 12.sp,
                     modifier = Modifier
-                        .height(8.dp)
-                        .weight(0.6f)
+                        .padding(12.dp)
+                        .clickable { onClickChangePassword(email) }
                 )
+                Spacer(modifier = Modifier.weight(1f))
+
                 Text(
                     text = "Create Account",
                     color = Accent,
                     fontSize = 12.sp,
                     modifier = Modifier
-                        .weight(0.4f)
                         .padding(12.dp)
                         .clickable { onClickSingUp() }
                 )
             }
+            Spacer(modifier = Modifier.height(22.dp))
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -588,6 +662,7 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String,
     var nickname by remember { mutableStateOf("erich") }
     var email by remember { mutableStateOf("schnellerich@hotmail.com") }
     var password by remember { mutableStateOf("1234566") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -612,6 +687,14 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String,
                     unfocusedBorderColor = Orange1
                 ),
                 maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
             OutlinedTextField(
@@ -628,6 +711,14 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String,
                     unfocusedBorderColor = Orange1
                 ),
                 maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
             OutlinedTextField(
@@ -644,6 +735,25 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String,
                     unfocusedBorderColor = Orange1
                 ),
                 maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            painter = painterResource(id = icon),
+                            contentDescription = null,
+//                            tint = Orange1
+                        )
+                    }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
             Spacer(
@@ -675,3 +785,8 @@ fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String,
         }
     }
 }
+/*
+* ---------------------------------------------------
+* */
+
+
