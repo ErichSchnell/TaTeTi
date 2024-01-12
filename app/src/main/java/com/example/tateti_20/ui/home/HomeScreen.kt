@@ -119,7 +119,9 @@ fun HomeScreen(
                     onClickLogin = { email, password ->
                         homeViewModel.login(email, password)
                     },
-                    onClickSingUp = { homeViewModel.getSingUp() },
+                    onClickSingUp = { email, password, verifyPassword ->
+                        homeViewModel.singUp(email, password, verifyPassword)
+                    },
                     onClickChangePassword = { email ->
                         homeViewModel.setChangePassword(email)
                                             },
@@ -131,11 +133,11 @@ fun HomeScreen(
                 )
 
             }
-            HomeViewState.SINGUP -> {
-                SingUp(modifier = Modifier.weight(1f), loading = loading) {nickname, email, password ->
-                    homeViewModel.singUp(nickname, email, password)
-                }
-            }
+//            HomeViewState.SINGUP -> {
+//                SingUp(modifier = Modifier.weight(1f), loading = loading) {email, password ->
+//                    homeViewModel.singUp(email, password)
+//                }
+//            }
 
             HomeViewState.HOME -> {
                 Home(
@@ -515,12 +517,14 @@ fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
 @Composable
 fun Login(modifier: Modifier, loading: Boolean,
           onClickLogin: (String, String) -> Unit,
-          onClickSingUp: () -> Unit,
+          onClickSingUp: (String, String, String) -> Unit,
           onClickChangePassword: (String) -> Unit,
           onGoogleLoginSelected: () -> Unit
 ) {
+    var createUser by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("schnellerich@hotmail.com") }
-    var password by remember { mutableStateOf("1234566") }
+    var password by remember { mutableStateOf("111111") }
+    var verifyPassword by remember { mutableStateOf("111111") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     Box(
@@ -591,11 +595,52 @@ fun Login(modifier: Modifier, loading: Boolean,
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
+            AnimatedContent(targetState = createUser, label = "") {
+                if(it){
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        label = { Text(text = "confirm password", color = Orange2) },
+                        value = verifyPassword,
+                        onValueChange = { verifyPassword = it },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Orange1,
+                            textColor = Accent,
+                            focusedBorderColor = Orange1,
+                            unfocusedBorderColor = Orange1
+                        ),
+                        maxLines = 1,
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
+                }
+            }
             Row(
                 Modifier
                     .fillMaxWidth()
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp)) {
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+                ) {
+                Text(
+                    text = "Create Account",
+                    color = Accent,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .clickable { createUser = !createUser }
+                )
+                Checkbox(checked = createUser, onCheckedChange = { createUser = it })
+                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = "Forgot Password?",
                     color = Accent,
@@ -604,16 +649,7 @@ fun Login(modifier: Modifier, loading: Boolean,
                         .padding(12.dp)
                         .clickable { onClickChangePassword(email) }
                 )
-                Spacer(modifier = Modifier.weight(1f))
 
-                Text(
-                    text = "Create Account",
-                    color = Accent,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .clickable { onClickSingUp() }
-                )
             }
             Spacer(modifier = Modifier.height(22.dp))
             Button(
@@ -624,10 +660,14 @@ fun Login(modifier: Modifier, loading: Boolean,
                     backgroundColor = Orange1,
                     contentColor = Accent
                 ),
-                onClick = { onClickLogin(email, password) },
+                onClick = {
+                    if (createUser) onClickSingUp(email, password, verifyPassword)
+                    else onClickLogin(email, password)
+                },
                 enabled = (email.isNotEmpty() && password.isNotEmpty())
             ) {
-                Text(text = "Login")
+                if (createUser) Text(text = "Create User")
+                else Text(text = "Login")
             }
             Card(
                 Modifier

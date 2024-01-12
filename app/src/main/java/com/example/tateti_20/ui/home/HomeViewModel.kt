@@ -142,25 +142,27 @@ class HomeViewModel @Inject constructor(
     /*
     *-------Email-------
     */
-    fun getSingUp() {
-        _uiState.value = HomeViewState.SINGUP
-    }
-    fun singUp(nickname: String,email: String, password: String) {
-        viewModelScope.launch(Dispatchers.IO){
-            _loading.value = true
-            try {
-                val result = authService.register(email, password)
+    fun singUp(email: String, password: String, verifyPassword: String) {
+        if (password == verifyPassword){
+            viewModelScope.launch(Dispatchers.IO){
+                _loading.value = true
+                try {
+                    val result = authService.register(email, password)
 
-                result?.let {
-                    createUser(result.uid,result.email.orEmpty(),nickname)
-                    saveLocalUserId(it.uid)
+                    result?.let {
+                        createUser(result.uid,result.email.orEmpty(),"random${(0..100000).random()}")
+                        saveLocalUserId(it.uid)
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("Erich", "${e.message}")
                 }
-
-            } catch (e: Exception) {
-                Log.e("Erich", "${e.message}")
+                _loading.value = false
             }
-            _loading.value = false
+        } else {
+            _showToast.value = "passwords aren't same"
         }
+
     }
     fun login(email: String, password: String){
         viewModelScope.launch(Dispatchers.IO) {
@@ -304,7 +306,7 @@ sealed class HomeViewState {
     object LOADING : HomeViewState()
     object LOGIN : HomeViewState()
     object HOME : HomeViewState()
-    object SINGUP : HomeViewState()
+//    object SINGUP : HomeViewState()
 }
 
 data class NavigateToHall(
