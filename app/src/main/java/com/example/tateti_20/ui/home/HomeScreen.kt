@@ -22,25 +22,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.ModalDrawer
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,6 +61,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.UserModelUi
@@ -105,14 +106,12 @@ fun HomeScreen(
             .background(Background), horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        LogoHead()
-
         when (uiState) {
             HomeViewState.LOADING -> {
                 Loading(modifier = Modifier.weight(1f))
             }
             HomeViewState.LOGIN -> {
-
+                LogoHead()
                 Login(
                     modifier = Modifier.weight(1f),
                     loading = loading,
@@ -133,23 +132,43 @@ fun HomeScreen(
                 )
 
             }
-//            HomeViewState.SINGUP -> {
-//                SingUp(modifier = Modifier.weight(1f), loading = loading) {email, password ->
-//                    homeViewModel.singUp(email, password)
-//                }
-//            }
 
             HomeViewState.HOME -> {
-                Home(
-                    modifier = Modifier.weight(1f),
-                    user = user,
-                    onClickHalls = { homeViewModel.viewHalls(navigateToHalls) },
-                    onJoinGame = {   homeViewModel.joinGame(it, navigateToMach) },
-                    onCreateGame = { hallName, password ->
-                        homeViewModel.onCreateGame(hallName, password, navigateToMach)
-                   },
-                    onClickLogout = { homeViewModel.logout()}
-                )
+                ModalDrawer(
+                    drawerBackgroundColor = Background,
+                    drawerContent = {
+                        Column(modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                            .background(Background)) {
+                            Perfil(user){
+                                homeViewModel.editUserName(it)
+                            }
+                            Spacer(modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f))
+                            Logout(Modifier.align(Alignment.CenterHorizontally)) { homeViewModel.logout() }
+                        }
+                    }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Background), horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        LogoHead()
+                        Home(
+                            modifier = Modifier.weight(1f),
+                            user = user,
+                            onClickHalls = { homeViewModel.viewHalls(navigateToHalls) },
+                            onJoinGame = {   homeViewModel.joinGame(it, navigateToMach) },
+                            onCreateGame = { hallName, password ->
+                                homeViewModel.onCreateGame(hallName, password, navigateToMach)
+                            }
+                        )
+                    }
+
+                }
             }
         }
     }
@@ -163,6 +182,91 @@ fun HomeScreen(
     if (navigateToHall.state){
         homeViewModel.clearNavigateToHall()
         navigateToMach(navigateToHall.hallId,navigateToHall.userId)
+    }
+}
+
+
+@Composable
+fun Perfil(user: UserModelUi, editUserName:(String) -> Unit) {
+    var editName by remember { mutableStateOf(false) }
+    var currentUserName by remember { mutableStateOf(user.userName) }
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Image(
+            modifier = Modifier
+                .size(50.dp)
+                .padding(end = 8.dp),
+            imageVector = Icons.Default.AccountCircle, contentDescription = null
+        )
+        Text(text = user.userName)
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            modifier = Modifier
+                .padding(end = 12.dp)
+                .clickable { editName = !editName },
+            imageVector = Icons.Filled.Edit, contentDescription = null
+        )
+    }
+    if (editName){
+        Dialog(
+            onDismissRequest = { editName = false },
+        ){
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                OutlinedTextField(
+                    label = { Text(text = "New Username", color = Orange2) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    value = currentUserName,
+                    onValueChange = { currentUserName = it },
+                    maxLines = 1,
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Orange1,
+                        textColor = Accent,
+                        focusedBorderColor = Orange1,
+                        unfocusedBorderColor = Orange2
+                    )
+                )
+                Button(
+                    modifier = Modifier.padding(end = 24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Orange1,
+                        contentColor = Accent
+                    ),
+                    onClick = { editUserName(currentUserName) },
+                    enabled = currentUserName != user.userName
+                ) {
+                    Text(text = "Update Username")
+                }
+            }
+        }
+    }
+}
+@Composable
+fun Logout(modifier: Modifier, onClickLogout: () -> Unit) {
+    Row(
+        modifier = modifier
+            .padding(vertical = 12.dp)
+            .clickable { onClickLogout() }, verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_logout),
+            tint = Accent,
+            contentDescription = "ic_logout"
+        )
+        Text(text = "Logout", color = Accent, fontSize = 12.sp)
     }
 }
 
@@ -225,8 +329,7 @@ fun Home(
     user: UserModelUi,
     onCreateGame: (String, String) -> Unit,
     onJoinGame: (String) -> Unit,
-    onClickHalls: () -> Unit,
-    onClickLogout: () -> Unit
+    onClickHalls: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -294,19 +397,6 @@ fun Home(
                 Spacer(modifier = Modifier.width(130.dp))
                 Defeats(user)
             }
-        }
-        Row(
-            Modifier
-                .padding(24.dp)
-                .align(Alignment.BottomEnd)
-                .clickable { onClickLogout() }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_logout),
-                tint = Accent,
-                contentDescription = "ic_logout"
-            )
-            Text(text = "Logout", color = Accent, fontSize = 12.sp)
         }
     }
 }
@@ -664,7 +754,7 @@ fun Login(modifier: Modifier, loading: Boolean,
                     if (createUser) onClickSingUp(email, password, verifyPassword)
                     else onClickLogin(email, password)
                 },
-                enabled = (email.isNotEmpty() && password.isNotEmpty())
+                enabled = (email.isNotEmpty() && password.isNotEmpty() && (verifyPassword.isNotEmpty() || !createUser))
             ) {
                 if (createUser) Text(text = "Create User")
                 else Text(text = "Login")
@@ -702,134 +792,6 @@ fun Login(modifier: Modifier, loading: Boolean,
             )
         }
 
-    }
-}
-@Composable
-fun SingUp(modifier: Modifier, loading: Boolean, onClickSingUp: (String, String, String) -> Unit) {
-    var nickname by remember { mutableStateOf("erich") }
-    var email by remember { mutableStateOf("schnellerich@hotmail.com") }
-    var password by remember { mutableStateOf("1234566") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = modifier
-            .background(Background),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(Background)
-        ) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                label = { Text(text = "nickname", color = Orange2) },
-                value = nickname,
-                onValueChange = { nickname = it },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    cursorColor = Orange1,
-                    textColor = Accent,
-                    focusedBorderColor = Orange1,
-                    unfocusedBorderColor = Orange1
-                ),
-                maxLines = 1,
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                label = { Text(text = "email", color = Orange2) },
-                value = email,
-                onValueChange = { email = it },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    cursorColor = Orange1,
-                    textColor = Accent,
-                    focusedBorderColor = Orange1,
-                    unfocusedBorderColor = Orange1
-                ),
-                maxLines = 1,
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                label = { Text(text = "password", color = Orange2) },
-                value = password,
-                onValueChange = { password = it },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    cursorColor = Orange1,
-                    textColor = Accent,
-                    focusedBorderColor = Orange1,
-                    unfocusedBorderColor = Orange1
-                ),
-                maxLines = 1,
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(
-                            painter = painterResource(id = icon),
-                            contentDescription = null,
-//                            tint = Orange1
-                        )
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-            )
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Orange1,
-                    contentColor = Accent
-                ),
-                onClick = { onClickSingUp(nickname, email, password) },
-                enabled = (email.isNotEmpty() && password.isNotEmpty())
-            ) {
-                Text(text = "SingUp")
-            }
-        }
-        if(loading){
-            CircularProgressIndicator(
-                modifier = Modifier.size(38.dp),
-                color = Orange2,
-                backgroundColor = Orange1,
-                strokeWidth = 2.dp
-            )
-        }
     }
 }
 /*

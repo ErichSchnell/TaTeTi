@@ -1,8 +1,6 @@
 package com.example.tateti_20.ui.home
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
@@ -156,6 +154,23 @@ class HomeViewModel @Inject constructor(
 
                 } catch (e: Exception) {
                     Log.e("Erich", "${e.message}")
+                    when(e.message){
+                        "The email address is badly formatted." -> {
+                            _showToast.value = "Email incorrect"
+                        }
+                        "An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]" -> {
+                            _showToast.value = "Email or Password incorrect"
+                        }
+                        "The given password is invalid. [ Password should be at least 6 characters ]" -> {
+                            _showToast.value = "Password should be at least 6 characters"
+                        }
+                        "The email address is already in use by another account." -> {
+                            _showToast.value = "Email is already in use"
+                        }
+                        else -> {
+                        }
+                    }
+
                 }
                 _loading.value = false
             }
@@ -176,7 +191,18 @@ class HomeViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 Log.e("Erich", "${e.message}")
-                _showToast.value = "Credencial"
+                when(e.message){
+                    "The email address is badly formatted." -> {
+                        _showToast.value = "Email incorrect"
+                    }
+                    "An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]" -> {
+                        _showToast.value = "Email or Password incorrect"
+                    }
+                    else -> {
+
+                    }
+                }
+
             }
             _loading.value = false
         }
@@ -295,6 +321,22 @@ class HomeViewModel @Inject constructor(
 
     fun clearNavigateToHall() {
         _navigateToHall.value = _navigateToHall.value.copy(false)
+    }
+
+    fun editUserName(newUserName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = async { setUser(_user.value.copy(userName = newUserName)) }.await()
+
+                if(result){
+                    Log.e("Erich", "$result")
+                    _user.value = user.value.copy(userName = newUserName)
+//                    _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
+                }
+            } catch(e:Exception){
+                Log.e("Erich", "${e.message}")
+            }
+        }
     }
 
     /*
