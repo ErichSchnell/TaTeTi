@@ -68,6 +68,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
 
+    // Coil (actualizar imagenes por Uri)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
     //Dagger
     implementation ("com.google.dagger:hilt-android:2.44.2")
     implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")

@@ -1,6 +1,7 @@
 package com.example.tateti_20.ui.home
 
 import android.app.Activity
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -28,6 +30,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DrawerValue
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.ModalDrawer
@@ -42,17 +45,21 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -72,6 +79,11 @@ import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.launch
+import coil.compose.AsyncImage
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 @Composable
@@ -80,6 +92,9 @@ fun HomeScreen(
     navigateToMach: (String, String) -> Unit,
     navigateToHalls: (String) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val showModalDrawer = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     val showToast by homeViewModel.showToast.collectAsState()
     val navigateToHall by homeViewModel.navigateToHall.collectAsState()
 
@@ -87,6 +102,22 @@ fun HomeScreen(
     val user by homeViewModel.user.collectAsState()
     val loading by homeViewModel.loading.collectAsState()
     val context = LocalContext.current
+
+    //PerfilImage
+    var resultUri: Uri? by remember { mutableStateOf(null) }
+    var uri: Uri? by remember{ mutableStateOf(null) }
+
+    val intenCameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+        if(it && uri?.path?.isNotEmpty() == true){
+            homeViewModel.uploadAndGetImage(uri!!){newUri -> resultUri = newUri}
+        }
+    }
+
+    val intenGalleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        if(it?.path?.isNotEmpty() == true){
+            homeViewModel.uploadAndGetImage(it){newUri -> resultUri = newUri}
+        }
+    }
 
     val googleLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()){ result: ActivityResult ->
         if (result.resultCode == Activity.RESULT_OK){
@@ -135,20 +166,22 @@ fun HomeScreen(
 
             HomeViewState.HOME -> {
                 ModalDrawer(
+                    drawerState = showModalDrawer,
                     drawerBackgroundColor = Background,
                     drawerContent = {
-                        Column(modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
-                            .background(Background)) {
-                            Perfil(user){
-                                homeViewModel.editUserName(it)
+                        ModalDrawerProfile(
+                            user = user,
+                            isLoading = loading,
+                            uriImage = resultUri,
+                            editUserName = {homeViewModel.editUserName(it)},
+                            onClickLogout = {homeViewModel.logout()},
+                            onClickIntentCameraLauncher = {
+
+                            },
+                            onClickIntentGalleryLauncher = {
+                                intenGalleryLauncher.launch("image/*")
                             }
-                            Spacer(modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f))
-                            Logout(Modifier.align(Alignment.CenterHorizontally)) { homeViewModel.logout() }
-                        }
+                        )
                     }
                 ) {
                     Column(
@@ -156,19 +189,30 @@ fun HomeScreen(
                             .fillMaxSize()
                             .background(Background), horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        LogoHead()
+                        LogoHead{
+                            coroutineScope.launch {
+                                showModalDrawer.open()
+                            }
+                        }
                         Home(
                             modifier = Modifier.weight(1f),
                             user = user,
+                            resultUri = resultUri,
                             onClickHalls = { homeViewModel.viewHalls(navigateToHalls) },
                             onJoinGame = {   homeViewModel.joinGame(it, navigateToMach) },
                             onCreateGame = { hallName, password ->
                                 homeViewModel.onCreateGame(hallName, password, navigateToMach)
+                            },
+                            onClickUserName = {
+                                coroutineScope.launch {
+                                    showModalDrawer.open()
+                                }
                             }
                         )
                     }
 
                 }
+                LoadingDate(loading)
             }
         }
     }
@@ -185,9 +229,104 @@ fun HomeScreen(
     }
 }
 
+@Composable
+fun ModalDrawerProfile(
+    user: UserModelUi,
+    isLoading: Boolean,
+    uriImage: Uri?,
+    editUserName: (String) -> Unit,
+    onClickLogout: () -> Unit,
+    onClickIntentCameraLauncher:()->Unit,
+    onClickIntentGalleryLauncher:()->Unit,
+){
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(8.dp)
+        .background(Background)
+    ) {
+        ProfilePhoto(
+            Modifier.align(Alignment.CenterHorizontally),
+            isLoading,
+            uriImage,
+            onClickIntentCameraLauncher = onClickIntentCameraLauncher,
+            onClickIntentGalleryLauncher = onClickIntentGalleryLauncher,
+        )
+        EditPerfil(user, editUserName = editUserName)
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f))
+        Logout(Modifier.align(Alignment.CenterHorizontally)) { onClickLogout() }
+    }
+}
 
 @Composable
-fun Perfil(user: UserModelUi, editUserName:(String) -> Unit) {
+fun ProfilePhoto(
+    modifier: Modifier,
+    isLoading: Boolean,
+    uriImage: Uri?,
+    onClickIntentCameraLauncher:()->Unit,
+    onClickIntentGalleryLauncher:()->Unit,
+
+    ) {
+    var showProfilePhoto by remember{ mutableStateOf(false) }
+    var changeProfilePhoto by remember{ mutableStateOf(false) }
+
+    Box(
+        modifier = modifier
+            .size(200.dp)
+            .clip(CircleShape)
+            .border(2.dp, Orange1, CircleShape)
+            .clickable { showProfilePhoto = true },
+        contentAlignment = Alignment.Center
+    ){
+        if (isLoading) {
+            Loading(modifier)
+        } else {
+            if (uriImage != null) {
+                AsyncImage(
+                    model = uriImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    imageVector = Icons.Default.AccountCircle, contentDescription = null
+                )
+            }
+        }
+    }
+
+    if (showProfilePhoto){
+        Dialog(onDismissRequest = { showProfilePhoto = false }) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (uriImage != null) {
+                    AsyncImage(
+                        model = uriImage,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        modifier = Modifier.size(200.dp),
+                        imageVector = Icons.Default.AccountCircle, contentDescription = null
+                    )
+                }
+                Image(
+                    modifier = Modifier.size(30.dp).clickable {
+                        showProfilePhoto = false
+                        onClickIntentGalleryLauncher()
+                    },
+                    painter = painterResource(id = R.drawable.ic_gallery), contentDescription = null,
+                    colorFilter = ColorFilter.tint(Orange2)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun EditPerfil(user: UserModelUi, editUserName:(String) -> Unit) {
     var editName by remember { mutableStateOf(false) }
     var currentUserName by remember { mutableStateOf(user.userName) }
     Row (
@@ -245,13 +384,51 @@ fun Perfil(user: UserModelUi, editUserName:(String) -> Unit) {
                         backgroundColor = Orange1,
                         contentColor = Accent
                     ),
-                    onClick = { editUserName(currentUserName) },
+                    onClick = {
+                        editUserName(currentUserName)
+                        editName = false
+                    },
                     enabled = currentUserName != user.userName
                 ) {
                     Text(text = "Update Username")
                 }
             }
         }
+    }
+}
+@Composable
+fun Perfil(user: UserModelUi, resultUri: Uri?, onClickUserName: () -> Unit) {
+    var editName by remember { mutableStateOf(false) }
+    var currentUserName by remember { mutableStateOf(user.userName) }
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .clickable { onClickUserName() },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ){
+        Box(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .padding(horizontal = 18.dp),
+            contentAlignment = Alignment.Center
+        ){
+            if (resultUri != null) {
+                AsyncImage(
+                    model = resultUri,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    modifier = Modifier.size(50.dp),
+                    imageVector = Icons.Default.AccountCircle, contentDescription = null
+                )
+            }
+        }
+        Text(text = user.userName)
     }
 }
 @Composable
@@ -271,7 +448,7 @@ fun Logout(modifier: Modifier, onClickLogout: () -> Unit) {
 }
 
 @Composable
-fun LogoHead() {
+fun LogoHead(onClickLogo:() -> Unit = {}) {
     Spacer(
         modifier = Modifier
             .fillMaxWidth()
@@ -282,7 +459,8 @@ fun LogoHead() {
         modifier = Modifier
             .size(200.dp)
             .clip(RoundedCornerShape(24.dp))
-            .border(4.dp, Orange1, RoundedCornerShape(24.dp)),
+            .border(4.dp, Orange1, RoundedCornerShape(24.dp))
+            .clickable { onClickLogo() },
         contentAlignment = Alignment.Center,
 
         ) {
@@ -327,9 +505,11 @@ fun Loading(modifier: Modifier) {
 fun Home(
     modifier: Modifier,
     user: UserModelUi,
+    resultUri: Uri?,
     onCreateGame: (String, String) -> Unit,
-    onJoinGame: (String) -> Unit,
-    onClickHalls: () -> Unit
+    onClickHalls: () -> Unit,
+    onClickUserName: () -> Unit,
+    onJoinGame: (String) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -343,6 +523,26 @@ fun Home(
         ) {
             var createGame by remember { mutableStateOf(false) }
 
+
+            Perfil(user = user, resultUri, onClickUserName = onClickUserName)
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(28.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Background),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Victories(user)
+                Spacer(modifier = Modifier.width(130.dp))
+                Defeats(user)
+            }
+
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(28.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Create Hall",
@@ -385,18 +585,10 @@ fun Home(
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(38.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Background),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Victories(user)
-                Spacer(modifier = Modifier.width(130.dp))
-                Defeats(user)
-            }
+            Spacer(modifier = Modifier.height(18.dp))
+
+
+            
         }
     }
 }
@@ -783,19 +975,36 @@ fun Login(modifier: Modifier, loading: Boolean,
             }
 
         }
-        if(loading){
-            CircularProgressIndicator(
-                modifier = Modifier.size(38.dp),
-                color = Orange2,
-                backgroundColor = Orange1,
-                strokeWidth = 2.dp
-            )
-        }
+        LoadingDate(loading)
 
+    }
+}
+
+@Composable
+fun LoadingDate(loading:Boolean = false) {
+    if(loading){
+        CircularProgressIndicator(
+            modifier = Modifier.size(38.dp),
+            color = Orange2,
+            backgroundColor = Orange1,
+            strokeWidth = 2.dp
+        )
     }
 }
 /*
 * ---------------------------------------------------
 * */
 
+
+/*
+*
+* */
+
+private fun generateFile(): File {
+    val name = "PhotoCompose_" + SimpleDateFormat("yyyyMMdd_hhmmss").format(Date())
+    return File.createTempFile(name,".jpg")
+}
+/*
+*
+* */
 

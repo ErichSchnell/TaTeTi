@@ -1,9 +1,12 @@
 package com.example.tateti_20.ui.home
 
+import android.net.Uri
 import android.util.Log
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tateti_20.data.network.AuthService
+import com.example.tateti_20.data.network.FirebaseStorageService
 import com.example.tateti_20.domain.CreateNewGame
 import com.example.tateti_20.domain.CreateNewUser
 import com.example.tateti_20.domain.GetLocalUserId
@@ -20,6 +23,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Objects
 import javax.inject.Inject
 
 
@@ -36,7 +44,8 @@ class HomeViewModel @Inject constructor(
     private val setUser: UpdateUser,
 //    private val joinToUser: JoinToUser,
 
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val storageService: FirebaseStorageService
 ) : ViewModel() {
 
     val TAG = "erich"
@@ -62,7 +71,9 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             if (authService.isUserLogged()) {
+
                 val userId = async{ getLocalUserId() }.await()
+
                 Log.i(TAG, "userId: $userId")
 
                 if (userId.isNotEmpty()){
@@ -125,10 +136,6 @@ class HomeViewModel @Inject constructor(
     fun viewHalls(navigateToHalls: (String) -> Unit) {
         navigateToHalls(_user.value.userId)
     }
-
-
-
-
 
 
 
@@ -325,6 +332,7 @@ class HomeViewModel @Inject constructor(
 
     fun editUserName(newUserName: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            _loading.value = true
             try {
                 val result = async { setUser(_user.value.copy(userName = newUserName)) }.await()
 
@@ -336,12 +344,34 @@ class HomeViewModel @Inject constructor(
             } catch(e:Exception){
                 Log.e("Erich", "${e.message}")
             }
+            _loading.value = false
         }
     }
 
     /*
         *---------------------------------------
         */
+
+
+
+    /*
+    * ----------------- STORAGE-------------------
+    * */
+    fun uploadAndGetImage(uri: Uri, onSuccessDownload:(Uri)->Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _loading.value = true
+
+            try {
+                val result =  storageService.uploadAndDownloadImage(_user.value, uri)
+
+                onSuccessDownload(result)
+            }catch (e:Exception){
+                Log.i("uploadAndGetImage", "${e.message.orEmpty()}")
+            }
+            _loading.value = false
+        }
+    }
+
 }
 
 sealed class HomeViewState {
