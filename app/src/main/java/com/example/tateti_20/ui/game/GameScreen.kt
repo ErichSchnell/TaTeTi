@@ -181,12 +181,12 @@ fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
 
             val turno = if(game.isGameReady){
                 if (game.isMyTurn) {
-                    "Tu Turno"
+                    "You Turn"
                 } else {
-                    "Turno Rival"
+                    "Rival Turn"
                 }
             } else {
-                "Esperando Jugador"
+                "Waiting Player"
             }
 
             Row (verticalAlignment = Alignment.CenterVertically){
@@ -289,7 +289,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 .height(24.dp))
 
             val waitingPlayer = if(game.player1?.resetGame == true || game.player2?.resetGame == true) {
-                if (game.player1?.resetGame == true) "Esperando ${game.player2?.userName}" else "Esperando ${game.player1?.userName}"
+                if (game.player1?.resetGame == true) "Waiting ${game.player2?.userName}" else "Waiting ${game.player1?.userName}"
             } else {
                 ""
             }

@@ -148,11 +148,9 @@ fun HomeScreen(
                     loading = loading,
                     onClickLogin = { email, password ->
                         homeViewModel.login(email, password)
-//                        coroutineScope.launch { showModalDrawer.close() }
                     },
                     onClickSingUp = { email, password, verifyPassword ->
                         homeViewModel.singUp(email, password, verifyPassword)
-//                        coroutineScope.launch { showModalDrawer.close() }
                     },
                     onClickChangePassword = { email ->
                         homeViewModel.setChangePassword(email)
@@ -243,26 +241,27 @@ fun ModalDrawerProfile(
 ){
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(8.dp)
+        .padding(24.dp)
         .background(Background)
     ) {
-        ProfilePhoto(
+        ModalProfilePhoto(
             Modifier.align(Alignment.CenterHorizontally),
             isLoading,
             uriImage,
             onClickIntentCameraLauncher = onClickIntentCameraLauncher,
             onClickIntentGalleryLauncher = onClickIntentGalleryLauncher,
         )
+        Spacer(modifier = Modifier.height(12.dp))
+
         EditPerfil(user, editUserName = editUserName)
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f))
+        Spacer(modifier = Modifier.fillMaxWidth().weight(1f))
+
         Logout(Modifier.align(Alignment.CenterHorizontally)) { onClickLogout() }
     }
 }
 
 @Composable
-fun ProfilePhoto(
+fun ModalProfilePhoto(
     modifier: Modifier,
     isLoading: Boolean,
     uriImage: Uri?,
@@ -340,26 +339,8 @@ fun ProfilePhoto(
 fun EditPerfil(user: UserModelUi, editUserName:(String) -> Unit) {
     var editName by remember { mutableStateOf(false) }
     var currentUserName by remember { mutableStateOf(user.userName) }
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Image(
-            modifier = Modifier
-                .size(50.dp)
-                .padding(end = 8.dp),
-            imageVector = Icons.Default.AccountCircle, contentDescription = null
-        )
+    Row (modifier = Modifier.fillMaxWidth().clickable { editName = !editName }, horizontalArrangement = Arrangement.Center){
         Text(text = user.userName)
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(
-            modifier = Modifier
-                .padding(end = 12.dp)
-                .clickable { editName = !editName },
-            imageVector = Icons.Filled.Edit, contentDescription = null
-        )
     }
     if (editName){
         Dialog(
