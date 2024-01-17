@@ -104,18 +104,18 @@ fun HomeScreen(
     val context = LocalContext.current
 
     //PerfilImage
-    var resultUri: Uri? by remember { mutableStateOf(null) }
+    val resultUri by homeViewModel.uriImage.collectAsState()
     var uri: Uri? by remember{ mutableStateOf(null) }
 
-    val intenCameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+    /*val intenCameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
         if(it && uri?.path?.isNotEmpty() == true){
-            homeViewModel.uploadAndGetImage(uri!!){newUri -> resultUri = newUri}
+            homeViewModel.uploadAndGetImage(uri!!){newUri -> homeViewModel.setUriImage(newUri)}
         }
-    }
+    }*/
 
     val intenGalleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         if(it?.path?.isNotEmpty() == true){
-            homeViewModel.uploadAndGetImage(it){newUri -> resultUri = newUri}
+            homeViewModel.uploadAndGetImage(it){newUri -> homeViewModel.setUriImage(newUri)}
         }
     }
 
@@ -148,13 +148,15 @@ fun HomeScreen(
                     loading = loading,
                     onClickLogin = { email, password ->
                         homeViewModel.login(email, password)
+//                        coroutineScope.launch { showModalDrawer.close() }
                     },
                     onClickSingUp = { email, password, verifyPassword ->
                         homeViewModel.singUp(email, password, verifyPassword)
+//                        coroutineScope.launch { showModalDrawer.close() }
                     },
                     onClickChangePassword = { email ->
                         homeViewModel.setChangePassword(email)
-                                            },
+                    },
                     onGoogleLoginSelected = {
                         homeViewModel.onGoogleLoginSelected{
                             googleLauncher.launch(it.signInIntent)
@@ -174,7 +176,10 @@ fun HomeScreen(
                             isLoading = loading,
                             uriImage = resultUri,
                             editUserName = {homeViewModel.editUserName(it)},
-                            onClickLogout = {homeViewModel.logout()},
+                            onClickLogout = {
+                                coroutineScope.launch { showModalDrawer.close() }
+                                homeViewModel.logout()
+                            },
                             onClickIntentCameraLauncher = {
 
                             },
@@ -203,11 +208,7 @@ fun HomeScreen(
                             onCreateGame = { hallName, password ->
                                 homeViewModel.onCreateGame(hallName, password, navigateToMach)
                             },
-                            onClickUserName = {
-                                coroutineScope.launch {
-                                    showModalDrawer.open()
-                                }
-                            }
+                            onClickUserName = { coroutineScope.launch { showModalDrawer.open() } }
                         )
                     }
 
@@ -223,6 +224,7 @@ fun HomeScreen(
             homeViewModel.clearToast()
         }
     }
+
     if (navigateToHall.state){
         homeViewModel.clearNavigateToHall()
         navigateToMach(navigateToHall.hallId,navigateToHall.userId)
@@ -284,13 +286,18 @@ fun ProfilePhoto(
         } else {
             if (uriImage != null) {
                 AsyncImage(
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clip(CircleShape),
                     model = uriImage,
                     contentDescription = null,
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.FillWidth
                 )
             } else {
                 Image(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clip(CircleShape),
                     imageVector = Icons.Default.AccountCircle, contentDescription = null
                 )
             }
@@ -302,9 +309,11 @@ fun ProfilePhoto(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (uriImage != null) {
                     AsyncImage(
+                        modifier = Modifier
+                            .size(300.dp),
                         model = uriImage,
                         contentDescription = null,
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Fit
                     )
                 } else {
                     Image(
@@ -313,10 +322,12 @@ fun ProfilePhoto(
                     )
                 }
                 Image(
-                    modifier = Modifier.size(30.dp).clickable {
-                        showProfilePhoto = false
-                        onClickIntentGalleryLauncher()
-                    },
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable {
+                            showProfilePhoto = false
+                            onClickIntentGalleryLauncher()
+                        },
                     painter = painterResource(id = R.drawable.ic_gallery), contentDescription = null,
                     colorFilter = ColorFilter.tint(Orange2)
                 )
@@ -408,27 +419,25 @@ fun Perfil(user: UserModelUi, resultUri: Uri?, onClickUserName: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ){
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .clip(CircleShape)
-                .padding(horizontal = 18.dp),
-            contentAlignment = Alignment.Center
-        ){
-            if (resultUri != null) {
-                AsyncImage(
-                    model = resultUri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    modifier = Modifier.size(50.dp),
-                    imageVector = Icons.Default.AccountCircle, contentDescription = null
-                )
-            }
+        if (resultUri != null) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape),
+                model = resultUri,
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth
+            )
+        } else {
+            Image(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape),
+                imageVector = Icons.Default.AccountCircle, contentDescription = null
+            )
         }
-        Text(text = user.userName)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = user.userName, color = Accent, fontSize = 14.sp)
     }
 }
 @Composable

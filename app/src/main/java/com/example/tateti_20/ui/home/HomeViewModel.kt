@@ -9,8 +9,10 @@ import com.example.tateti_20.data.network.AuthService
 import com.example.tateti_20.data.network.FirebaseStorageService
 import com.example.tateti_20.domain.CreateNewGame
 import com.example.tateti_20.domain.CreateNewUser
+import com.example.tateti_20.domain.GetLocalProfilePhoto
 import com.example.tateti_20.domain.GetLocalUserId
 import com.example.tateti_20.domain.GetUser
+import com.example.tateti_20.domain.SaveLocalProfilePhoto
 import com.example.tateti_20.domain.SaveLocalUserId
 import com.example.tateti_20.domain.UpdateUser
 import com.example.tateti_20.ui.model.GameModelUi
@@ -35,6 +37,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val saveLocalUserId: SaveLocalUserId,
     private val getLocalUserId: GetLocalUserId,
+    private val saveLocalProfilePhoto: SaveLocalProfilePhoto,
+    private val getLocalProfilePhoto: GetLocalProfilePhoto,
 //
     private val createNewGame: CreateNewGame,
 //    private val updateGame: UpdateGame,
@@ -65,6 +69,10 @@ class HomeViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _uriImage = MutableStateFlow<Uri?>(null)
+    val uriImage: StateFlow<Uri?> = _uriImage
+
+
 /*
         *-------------- CONTROL DE LOGIN / RECUPERAR USER ----------------
         */
@@ -73,6 +81,8 @@ class HomeViewModel @Inject constructor(
             if (authService.isUserLogged()) {
 
                 val userId = async{ getLocalUserId() }.await()
+
+
 
                 Log.i(TAG, "userId: $userId")
 
@@ -263,8 +273,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             authService.logout()
             saveLocalUserId("")
+            saveLocalProfilePhoto(Uri.parse(""))
         }
-
         _uiState.value = HomeViewState.LOGIN
     }
 
@@ -278,9 +288,7 @@ class HomeViewModel @Inject constructor(
 
                 if (userAux.userEmail.isNotEmpty()){
                     _user.value = userAux
-                    _uiState.value = HomeViewState.HOME
-                } else {
-                    createUser()
+                    loadProfilePhoto()
                 }
 
             } catch(e:Exception){
@@ -297,7 +305,7 @@ class HomeViewModel @Inject constructor(
                 val result = async { createNewUser(newUser) }.await()
                 if(result){
                     _user.value = newUser
-                    _uiState.value = HomeViewState.HOME
+                    loadProfilePhoto()
                 }
             } catch(e:Exception){
                 Log.e("Erich", "${e.message}")
@@ -357,20 +365,57 @@ class HomeViewModel @Inject constructor(
     /*
     * ----------------- STORAGE-------------------
     * */
+    private fun loadProfilePhoto() {
+        viewModelScope.launch(Dispatchers.IO){
+            try {
+
+                val localProfilePhoto = async{ getLocalProfilePhoto() }.await()
+
+                Log.d(TAG, "localProfilePhoto: $localProfilePhoto")
+
+                if (localProfilePhoto.toString() == ""){
+                    val currentImage = async{ storageService.getProfilePhoto(_user.value.userEmail) }.await()
+
+                    Log.e(TAG, "loadProfilePhoto: ${_uriImage.value}")
+                    _uriImage.value = currentImage
+                    _uiState.value = HomeViewState.HOME
+                } else {
+                    Log.e(TAG, "localProfilePhoto: ${_uriImage.value}")
+                    _uriImage.value = localProfilePhoto
+                    _uiState.value = HomeViewState.HOME
+                }
+
+
+
+            } catch(e:Exception) {
+                _uriImage.value = null
+                Log.e(TAG, "loadProfilePhoto error: ${e.message}")
+                Log.e(TAG, "loadProfilePhoto error: ${_uriImage.value}")
+            }
+        }
+    }
     fun uploadAndGetImage(uri: Uri, onSuccessDownload:(Uri)->Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             _loading.value = true
 
             try {
                 val result =  storageService.uploadAndDownloadImage(_user.value, uri)
-
+                saveLocalProfilePhoto(result)
                 onSuccessDownload(result)
+
             }catch (e:Exception){
-                Log.i("uploadAndGetImage", "${e.message.orEmpty()}")
+                Log.i("uploadAndGetImage", e.message.orEmpty())
             }
             _loading.value = false
         }
     }
+    fun setUriImage(newUri: Uri) {
+        _uriImage.value = newUri
+    }
+
+    /*
+        *---------------------------------------
+        */
 
 }
 

@@ -11,6 +11,7 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
+import okhttp3.internal.wait
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -78,6 +79,18 @@ class FirebaseStorageService @Inject constructor(private val storage: FirebaseSt
     suspend fun getAllImages(): List<Uri> {
         val reference = storage.reference.child("download/")
         return reference.listAll().await().items.map { it.downloadUrl.await() }
+    }
+
+    suspend fun getProfilePhoto(userEmail: String): Uri? {
+        return suspendCancellableCoroutine<Uri?> { cancellableContinuation ->
+            val reference = storage.reference.child("profilePhoto/$userEmail/image")
+
+            Log.d("erich", "getProfilePhoto reference: $reference")
+
+            reference.downloadUrl
+                .addOnSuccessListener { cancellableContinuation.resume(it) }
+                .addOnFailureListener { cancellableContinuation.resume(null) }
+        }
     }
 
 }
