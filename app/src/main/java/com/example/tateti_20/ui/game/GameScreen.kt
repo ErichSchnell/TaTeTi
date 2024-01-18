@@ -1,5 +1,6 @@
 package com.example.tateti_20.ui.game
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
@@ -40,7 +41,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.tateti_20.R
+import com.example.tateti_20.ui.core.Routes
 import com.example.tateti_20.ui.game.GameViewModel
 import com.example.tateti_20.ui.game.GameViewState
 import com.example.tateti_20.ui.model.GameModelUi
@@ -57,7 +60,8 @@ import com.example.tateti_20.ui.theme.Orange2
 fun GameScreen(
     gameViewModel: GameViewModel = hiltViewModel(),
     hallId: String,
-    userId: String
+    userId: String,
+    navigateToHome: () -> Unit
 ){
 
     val uiState by gameViewModel.uiState.collectAsState()
@@ -77,7 +81,9 @@ fun GameScreen(
         GameViewState.FINISH -> {
             FinishGame(game!!, winner,
                 resetGame= { gameViewModel.resetGame() },
-                closeGame = { gameViewModel.closeGame() }
+                closeGame = {
+                    gameViewModel.closeGame(navigateToHome)
+                }
             )
         }
     }

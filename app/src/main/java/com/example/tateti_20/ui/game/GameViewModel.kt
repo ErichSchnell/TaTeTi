@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.log
 
 private val TAG = "Erich"
 
@@ -288,7 +289,7 @@ class GameViewModel @Inject constructor(
     }
 
     fun resetGame() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (getPlayerType() == PlayerType.FirstPlayer) {
                 val player = _game.value!!.player1?.rstGame(true)
                 updateGame(_game.value!!.hallId.orEmpty(), _game.value?.copy(player1 = player)?.toModelData() ?: GameModelData())
@@ -298,6 +299,16 @@ class GameViewModel @Inject constructor(
             }
             _uiState.value = GameViewState.GAME
         }
+    }
+    fun closeGame(navigateToHome:()->Unit) {
+        Log.d(TAG, "closeGame - _game.value?.isFinished: ${_game.value?.isFinished}")
+        if (_game.value?.isFinished == false){
+            viewModelScope.launch(Dispatchers.IO) {
+                val currentGame = _game.value?.copy(isFinished = true)
+                updateGame(_game.value?.hallId.orEmpty() ,_game.value?.toModelData() ?: GameModelData())
+            }
+        }
+        navigateToHome()
     }
 
     private fun printResumeGame() {
@@ -321,22 +332,16 @@ class GameViewModel @Inject constructor(
 
     private fun printResumeUser() {
         Log.d("printResume", "{_user.value: ${_myUser.value}")
-        Log.d("printResume", "{_user.value.userId: ${_myUser.value!!.userId}")
-        Log.d("printResume", "{_user.value.nickname: ${_myUser.value!!.userName}")
-        Log.d("printResume", "{_user.value.victories: ${_myUser.value!!.victories}")
-        Log.d("printResume", "{_user.value.defeats: ${_myUser.value!!.defeats}")
-        Log.d("printResume", "{_user.value.hallId: ${_myUser.value!!.lastHall}")
+        Log.d("printResume", "{_user.value.userId: ${_myUser.value.userId}")
+        Log.d("printResume", "{_user.value.nickname: ${_myUser.value.userName}")
+        Log.d("printResume", "{_user.value.victories: ${_myUser.value.victories}")
+        Log.d("printResume", "{_user.value.defeats: ${_myUser.value.defeats}")
+        Log.d("printResume", "{_user.value.hallId: ${_myUser.value.lastHall}")
         Log.d(
             "printResume",
             "**************************************************************************"
         )
     }
-
-    fun closeGame() {
-
-    }
-
-
 }
 
 sealed class GameViewState {

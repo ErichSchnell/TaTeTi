@@ -33,12 +33,16 @@ fun ContentWrapper(navigatonController: NavHostController) {
             Game.route,
             arguments = listOf(
                 navArgument("hallId") {type = NavType.StringType},
-                navArgument("userId") {type = NavType.StringType}
+                navArgument("userId") {type = NavType.StringType},
             )
         ){
             GameScreen(
                 hallId = it.arguments?.getString("hallId").orEmpty(),
-                userId = it.arguments?.getString("userId").orEmpty()
+                userId = it.arguments?.getString("userId").orEmpty(),
+                navigateToHome = {
+                    navigatonController.popBackStack(navigatonController.graph.startDestinationId, true)
+                    navigatonController.navigate(Home.route)
+                }
             )
         }
         composable(
