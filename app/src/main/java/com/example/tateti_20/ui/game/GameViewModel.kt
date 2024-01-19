@@ -1,6 +1,8 @@
 package com.example.tateti_20.ui.game
 
 import android.util.Log
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
@@ -134,8 +136,14 @@ class GameViewModel @Inject constructor(
                         isMyTurn = isMyTurn(currentGame.playerTurn)
                     )
 
-                    verifyWinner()
-                    resetBoard()
+                    if(_game.value?.isFinished != true){
+                        verifyWinner()
+                        resetBoard()
+                    } else {
+
+                    }
+
+
 
 
 
@@ -304,8 +312,8 @@ class GameViewModel @Inject constructor(
         Log.d(TAG, "closeGame - _game.value?.isFinished: ${_game.value?.isFinished}")
         if (_game.value?.isFinished == false){
             viewModelScope.launch(Dispatchers.IO) {
-                val currentGame = _game.value?.copy(isFinished = true)
-                updateGame(_game.value?.hallId.orEmpty() ,_game.value?.toModelData() ?: GameModelData())
+                val currentGame = _game.value?.copy(isFinished = true, isVisible = false)
+                updateGame(_game.value?.hallId.orEmpty() ,currentGame?.toModelData() ?: GameModelData())
             }
         }
         navigateToHome()

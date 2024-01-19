@@ -6,7 +6,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.tateti_20.ui.ExampleScreen
 import com.example.tateti_20.ui.core.Routes.*
 import com.example.tateti_20.ui.game.GameScreen
 import com.example.tateti_20.ui.halls.HallsScreen
@@ -14,6 +13,7 @@ import com.example.tateti_20.ui.home.HomeScreen
 
 @Composable
 fun ContentWrapper(navigatonController: NavHostController) {
+
 
     NavHost(
         navController = navigatonController,
@@ -59,6 +59,13 @@ fun ContentWrapper(navigatonController: NavHostController) {
             )
         }
     }
+
+
+
+
+
+
+
 }
 
 sealed class Routes(val route:String){
