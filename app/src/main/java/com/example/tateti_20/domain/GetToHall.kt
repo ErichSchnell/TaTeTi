@@ -1,11 +1,12 @@
 package com.example.tateti_20.domain
 
 import android.util.Log
+import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import javax.inject.Inject
 
-val TAG = "erich GetToHall"
+val TAG = R.string.log.toString()
 
 class GetToHall @Inject constructor(private val dataServer: DataServerService) {
     suspend operator fun invoke(gameId:String):GameModelUi {

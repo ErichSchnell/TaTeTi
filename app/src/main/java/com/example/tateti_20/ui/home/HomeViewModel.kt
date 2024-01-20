@@ -2,9 +2,11 @@ package com.example.tateti_20.ui.home
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tateti_20.R
 import com.example.tateti_20.data.network.AuthService
 import com.example.tateti_20.data.network.FirebaseStorageService
 import com.example.tateti_20.domain.CreateNewGame
@@ -52,7 +54,7 @@ class HomeViewModel @Inject constructor(
     private val storageService: FirebaseStorageService
 ) : ViewModel() {
 
-    val TAG = "erich"
+    val TAG = R.string.log.toString()
 
     private val _uiState = MutableStateFlow<HomeViewState>(HomeViewState.LOADING)
     val uiState: StateFlow<HomeViewState> = _uiState
@@ -116,10 +118,10 @@ class HomeViewModel @Inject constructor(
 
                 if(hallId.isNotEmpty()){
                     updateUser(_user.value.copy(lastHall = hallId))
-                    Log.i("erich", "Sala creada: $hallId \n $newGame")
+                    Log.i(TAG, "Sala creada: $hallId \n $newGame")
                 }
             } catch (e:Exception){
-                Log.i("erich", "exploto todo: ${e.message}")
+                Log.i(TAG, "exploto todo: ${e.message}")
             }
         }
     }
@@ -170,19 +172,19 @@ class HomeViewModel @Inject constructor(
                     }
 
                 } catch (e: Exception) {
-                    Log.e("Erich", "${e.message}")
+                    Log.e(TAG, "${e.message}")
                     when(e.message){
                         "The email address is badly formatted." -> {
-                            _showToast.value = "Email incorrect"
+                            _showToast.value = R.string.email_incorrect.toString()
                         }
                         "An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]" -> {
-                            _showToast.value = "Email or Password incorrect"
+                            _showToast.value = R.string.email_pass_incorrect.toString()
                         }
                         "The given password is invalid. [ Password should be at least 6 characters ]" -> {
-                            _showToast.value = "Password should be at least 6 characters"
+                            _showToast.value = R.string.pass_short.toString()
                         }
                         "The email address is already in use by another account." -> {
-                            _showToast.value = "Email is already in use"
+                            _showToast.value = R.string.email_used.toString()
                         }
                         else -> {
                         }
@@ -192,7 +194,7 @@ class HomeViewModel @Inject constructor(
                 _loading.value = false
             }
         } else {
-            _showToast.value = "passwords aren't same"
+            _showToast.value = R.string.pass_same.toString()
         }
 
     }
@@ -207,13 +209,13 @@ class HomeViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                Log.e("Erich", "${e.message}")
+                Log.e(TAG, "${e.message}")
                 when(e.message){
                     "The email address is badly formatted." -> {
-                        _showToast.value = "Email incorrect"
+                        _showToast.value = R.string.email_incorrect.toString()
                     }
                     "An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]" -> {
-                        _showToast.value = "Email or Password incorrect"
+                        _showToast.value = R.string.email_pass_incorrect.toString()
                     }
                     else -> {
 
@@ -230,17 +232,17 @@ class HomeViewModel @Inject constructor(
                 _loading.value = true
                 try {
                     if (authService.changePassword(email)){
-                        _showToast.value = "Email Sent"
+                        _showToast.value = R.string.email_sent.toString()
                     }
 
                 } catch (e: Exception) {
-                    Log.e("Erich", "${e.message}")
-                    _showToast.value = "Email Incorrect"
+                    Log.e(TAG, "${e.message}")
+                    _showToast.value = R.string.email_incorrect.toString()
                 }
                 _loading.value = false
             }
         } else {
-            _showToast.value = "Insert Email"
+            _showToast.value = R.string.insert_email.toString()
         }
     }
 
@@ -264,7 +266,7 @@ class HomeViewModel @Inject constructor(
                 }
 
             }catch (e:Exception){
-                Log.e("Erich", "${e.message}")
+                Log.e(TAG, "${e.message}")
             }
             _loading.value = false
         }
@@ -289,11 +291,13 @@ class HomeViewModel @Inject constructor(
                 if (userAux.userEmail.isNotEmpty()){
                     _user.value = userAux
                     loadProfilePhoto()
+                } else {
+                    createUser()
                 }
 
             } catch(e:Exception){
                 logout()
-                Log.e("Erich", "${e.message}")
+                Log.e(TAG, "${e.message}")
             }
         }
     }
@@ -308,7 +312,7 @@ class HomeViewModel @Inject constructor(
                     loadProfilePhoto()
                 }
             } catch(e:Exception){
-                Log.e("Erich", "${e.message}")
+                Log.e(TAG, "${e.message}")
             }
 
         }
@@ -319,12 +323,12 @@ class HomeViewModel @Inject constructor(
                 val result = async { setUser(user) }.await()
 
                 if(result){
-                    Log.e("Erich", "$result")
+                    Log.e(TAG, "$result")
                     _user.value = user
                     _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }
             } catch(e:Exception){
-                Log.e("Erich", "${e.message}")
+                Log.e(TAG, "${e.message}")
             }
         }
     }
@@ -345,12 +349,12 @@ class HomeViewModel @Inject constructor(
                 val result = async { setUser(_user.value.copy(userName = newUserName)) }.await()
 
                 if(result){
-                    Log.e("Erich", "$result")
+                    Log.e(TAG, "$result")
                     _user.value = user.value.copy(userName = newUserName)
 //                    _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }
             } catch(e:Exception){
-                Log.e("Erich", "${e.message}")
+                Log.e(TAG, "${e.message}")
             }
             _loading.value = false
         }
@@ -404,7 +408,7 @@ class HomeViewModel @Inject constructor(
                 onSuccessDownload(result)
 
             }catch (e:Exception){
-                Log.i("uploadAndGetImage", e.message.orEmpty())
+                Log.i(TAG, e.message.orEmpty())
             }
             _loading.value = false
         }

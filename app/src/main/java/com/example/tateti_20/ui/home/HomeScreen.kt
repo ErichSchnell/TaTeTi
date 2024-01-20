@@ -30,6 +30,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -41,7 +42,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
@@ -103,7 +103,7 @@ fun HomeScreen(
     val loading by homeViewModel.loading.collectAsState()
     val context = LocalContext.current
 
-    //PerfilImage
+    //ProfileImage
     val resultUri by homeViewModel.uriImage.collectAsState()
     var uri: Uri? by remember{ mutableStateOf(null) }
 
@@ -253,8 +253,10 @@ fun ModalDrawerProfile(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        EditPerfil(user, editUserName = editUserName)
-        Spacer(modifier = Modifier.fillMaxWidth().weight(1f))
+        EditProfile(user, editUserName = editUserName)
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f))
 
         Logout(Modifier.align(Alignment.CenterHorizontally)) { onClickLogout() }
     }
@@ -336,10 +338,12 @@ fun ModalProfilePhoto(
 }
 
 @Composable
-fun EditPerfil(user: UserModelUi, editUserName:(String) -> Unit) {
+fun EditProfile(user: UserModelUi, editUserName:(String) -> Unit) {
     var editName by remember { mutableStateOf(false) }
     var currentUserName by remember { mutableStateOf(user.userName) }
-    Row (modifier = Modifier.fillMaxWidth().clickable { editName = !editName }, horizontalArrangement = Arrangement.Center){
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .clickable { editName = !editName }, horizontalArrangement = Arrangement.Center){
         Text(text = user.userName)
     }
     if (editName){
@@ -389,13 +393,14 @@ fun EditPerfil(user: UserModelUi, editUserName:(String) -> Unit) {
     }
 }
 @Composable
-fun Perfil(user: UserModelUi, resultUri: Uri?, onClickUserName: () -> Unit) {
+fun ProfileData(user: UserModelUi, resultUri: Uri?, onClickUserName: () -> Unit) {
     var editName by remember { mutableStateOf(false) }
     var currentUserName by remember { mutableStateOf(user.userName) }
     Row (
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(66.dp)
+            .padding(8.dp)
             .clickable { onClickUserName() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -418,7 +423,7 @@ fun Perfil(user: UserModelUi, resultUri: Uri?, onClickUserName: () -> Unit) {
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = user.userName, color = Accent, fontSize = 14.sp)
+        Text(text = user.userName, color = Accent, fontSize = 18.sp, fontWeight = FontWeight.Normal)
     }
 }
 @Composable
@@ -468,7 +473,7 @@ fun LogoHead(onClickLogo:() -> Unit = {}) {
             .height(8.dp)
     )
 
-    Text(text = "Firebase", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Orange1)
+//    Text(text = "Firebase", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Orange1)
 
     Text(text = "Ta-Te-Ti", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Orange2)
 }
@@ -514,7 +519,9 @@ fun Home(
             var createGame by remember { mutableStateOf(false) }
 
 
-            Perfil(user = user, resultUri, onClickUserName = onClickUserName)
+            Divider(modifier = Modifier.fillMaxWidth())
+            ProfileData(user = user, resultUri, onClickUserName = onClickUserName)
+            Divider(modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier
                 .fillMaxWidth()
                 .height(28.dp))
@@ -794,9 +801,9 @@ fun Login(modifier: Modifier, loading: Boolean,
           onGoogleLoginSelected: () -> Unit
 ) {
     var createUser by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("schnellerich@hotmail.com") }
-    var password by remember { mutableStateOf("111111") }
-    var verifyPassword by remember { mutableStateOf("111111") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var verifyPassword by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     Box(
@@ -832,50 +839,69 @@ fun Login(modifier: Modifier, loading: Boolean,
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                label = { Text(text = "password", color = Orange2) },
-                value = password,
-                onValueChange = { password = it },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    cursorColor = Orange1,
-                    textColor = Accent,
-                    focusedBorderColor = Orange1,
-                    unfocusedBorderColor = Orange1
-                ),
-                maxLines = 1,
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(
-                            painter = painterResource(id = icon),
-                            contentDescription = null,
-//                            tint = Orange1
-                        )
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
             AnimatedContent(targetState = createUser, label = "") {
                 if(it){
+                    Column {
+
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp),
+                            label = { Text(text = "password", color = Orange2) },
+                            value = password,
+                            onValueChange = { password = it },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                cursorColor = Orange1,
+                                textColor = Accent,
+                                focusedBorderColor = Orange1,
+                                unfocusedBorderColor = Orange1
+                            ),
+                            maxLines = 1,
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        )
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp),
+                            label = { Text(text = "confirm password", color = Orange2) },
+                            value = verifyPassword,
+                            onValueChange = { verifyPassword = it },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                cursorColor = Orange1,
+                                textColor = Accent,
+                                focusedBorderColor = Orange1,
+                                unfocusedBorderColor = Orange1
+                            ),
+                            maxLines = 1,
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        )
+                    }
+                } else {
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp),
-                        label = { Text(text = "confirm password", color = Orange2) },
-                        value = verifyPassword,
-                        onValueChange = { verifyPassword = it },
+                        label = { Text(text = "password", color = Orange2) },
+                        value = password,
+                        onValueChange = { password = it },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             cursorColor = Orange1,
                             textColor = Accent,
@@ -891,7 +917,17 @@ fun Login(modifier: Modifier, loading: Boolean,
                                 modifier = Modifier.size(18.dp)
                             )
                         },
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(id = icon),
+                                    contentDescription = null,
+//                            tint = Orange1
+                                )
+                            }
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                     )
                 }

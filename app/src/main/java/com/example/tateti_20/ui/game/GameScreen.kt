@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -87,7 +88,8 @@ fun GameScreen(
             FinishGame(game!!, winner,
                 resetGame= { gameViewModel.resetGame() },
                 closeGame = {
-                    gameViewModel.closeGame(navigateToHome)
+                    closerGame = true
+                    showDialogCloseGame = true
                 }
             )
         }
@@ -126,16 +128,16 @@ fun GameScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = "Game Finished", fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(id = R.string.game_finished), fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(text = "Player left the game", fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
+                    Text(text = stringResource(id = R.string.player_left_game), fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     TextButton(modifier = Modifier
                         .align(Alignment.End)
                         .padding(end = 12.dp), onClick = { gameViewModel.closeGame(navigateToHome) }) {
-                        Text(text = "Exit", color = Accent)
+                        Text(text = stringResource(id = R.string.exit), color = Accent)
                     }
                 }
             }
@@ -161,19 +163,21 @@ fun AlertCloseGame(onClickCancel: () -> Unit, onClickExit: () -> Unit) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "WAIT!", fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(id = R.string.wait), fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(text = "Are you wish leave the game?", fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
+                Text(text = stringResource(id = R.string.leave_game), fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row (modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)){
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)){
                     TextButton( onClick = { onClickCancel() }) {
-                        Text(text = "Cancel", color = Accent)
+                        Text(text = stringResource(id = R.string.cancel), color = Accent)
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     TextButton(  onClick = { onClickExit() }) {
-                        Text(text = "Exit", color = Accent)
+                        Text(text = stringResource(id = R.string.exit), color = Accent)
                     }
                 }
             }
@@ -219,7 +223,7 @@ fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
                     clipboard.setText(AnnotatedString(game.hallId))
-                    Toast.makeText(context, "Copiado!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.copided_address.toString(), Toast.LENGTH_SHORT).show()
                 }
             ){
                 Text(
@@ -232,7 +236,7 @@ fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.ic_copy),
-                    contentDescription = "ic_copy",
+                    contentDescription = null,
                     tint = BlueLink
                 )
             }
@@ -277,20 +281,25 @@ fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
                 .fillMaxWidth()
                 .height(40.dp))
 
+
             val turno = if(game.isGameReady){
-                if (game.isMyTurn) {
-                    "You Turn"
+                if (game.player1?.resetGame == true && game.player2?.resetGame == false ){
+                    "${stringResource(id = R.string.waiting)} ${game.player2.userName}"
+                } else if(game.player1?.resetGame == false && game.player2?.resetGame == true ){
+                    "${stringResource(id = R.string.waiting)} ${game.player1.userName}"
+                } else if (game.isMyTurn) {
+                    stringResource(id = R.string.your_turn)
                 } else {
-                    "Rival Turn"
+                    stringResource(id = R.string.rival_turn)
                 }
             } else {
-                "Waiting Player"
+                stringResource(id = R.string.waiting_player)
             }
 
             Row (verticalAlignment = Alignment.CenterVertically){
                 Text(text = turno, color = Orange1, fontSize = 18.sp)
                 Spacer(modifier = Modifier.width(12.dp))
-                if(!game.isGameReady){
+                if(!game.isGameReady || game.player1?.resetGame == true || game.player2?.resetGame == true ){
                     CircularProgressIndicator(
                         color = Orange2,
                         backgroundColor = Orange1,
@@ -328,9 +337,9 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
     val currentWinner = when (winner) {
         PlayerType.FirstPlayer -> game.player1?.userName
         PlayerType.SecondPlayer -> game.player2?.userName
-        PlayerType.Empty -> "EMPATE"
+        PlayerType.Empty -> stringResource(id = R.string.dead_heat)
     }
-    val title = if(winner != PlayerType.Empty) "¡FELICITACIONES!" else "¡MUY CERCA!"
+    val title = if(winner != PlayerType.Empty) stringResource(id = R.string.congratulations) else stringResource(id = R.string.very_close)
 
     Box (
         Modifier
@@ -339,13 +348,13 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
         contentAlignment = Alignment.Center
     ){
         Column (horizontalAlignment = Alignment.CenterHorizontally){
-            Text(text = title, fontSize = 44.sp, color = Orange1, fontWeight = FontWeight.Normal)
+            Text(text = title, fontSize = 34.sp, color = Orange1, fontWeight = FontWeight.Normal)
             Spacer(modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp))
             Row (verticalAlignment = Alignment.CenterVertically){
                 if(winner != PlayerType.Empty){
-                    Text(text = "WINNER: ", fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(id = R.string.winner_game), fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
                 }
                 Text(text = currentWinner.orEmpty(), fontSize = 24.sp, color = Orange2, fontWeight = FontWeight.Bold)
 
@@ -379,7 +388,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 colors = ButtonDefaults.buttonColors(backgroundColor = Orange1, contentColor = Accent),
                 onClick = { resetGame() }
             ) {
-                Text(text = "Play Again")
+                Text(text = stringResource(id = R.string.play_again))
             }
 
             Spacer(modifier = Modifier
@@ -387,7 +396,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 .height(24.dp))
 
             val waitingPlayer = if(game.player1?.resetGame == true || game.player2?.resetGame == true) {
-                if (game.player1?.resetGame == true) "Waiting ${game.player2?.userName}" else "Waiting ${game.player1?.userName}"
+                if (game.player1?.resetGame == true) "${stringResource(id = R.string.waiting)} ${game.player2?.userName}" else "${stringResource(id = R.string.waiting)} ${game.player1?.userName}"
             } else {
                 ""
             }
@@ -411,7 +420,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 colors = ButtonDefaults.buttonColors(backgroundColor = Accent, contentColor = Orange1),
                 onClick = { closeGame() }
             ) {
-                Text(text = "Exit")
+                Text(text = stringResource(id = R.string.exit))
             }
         }
 
@@ -419,7 +428,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
 }
 @Composable
 fun Puntaje(player: PlayerModelUi?) {
-    val currentVictories = player?.victories?.toString() ?: "0"
+    val currentVictories = player?.victories?.toString() ?: stringResource(id = R.string.zeroVictories)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 //        user?.let {
             Text(text = player?.userName.orEmpty(), fontSize = 20.sp, color = Orange1, fontWeight = FontWeight.Normal)

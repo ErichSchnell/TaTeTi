@@ -5,8 +5,10 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tateti_20.R
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.domain.GetToHall
 import com.example.tateti_20.domain.GetUser
@@ -34,7 +36,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.log
 
-private val TAG = "Erich"
+private val TAG = R.string.log.toString()
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -72,7 +74,7 @@ class GameViewModel @Inject constructor(
     */
     fun initGame(userId: String, hallId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.i("erich", "initGame: (userId: $userId \thallId: $hallId)")
+            Log.i(TAG, "initGame: (userId: $userId \thallId: $hallId)")
             try {
                 _myUser.value = async{ getUser(userId) }.await()
 
@@ -139,12 +141,7 @@ class GameViewModel @Inject constructor(
                     if(_game.value?.isFinished != true){
                         verifyWinner()
                         resetBoard()
-                    } else {
-
                     }
-
-
-
 
 
                     if (showGame){
@@ -206,11 +203,13 @@ class GameViewModel @Inject constructor(
                     _winner.value = PlayerType.FirstPlayer
 
                     if (getPlayerType() == PlayerType.FirstPlayer) {
-                        updateUserVictory(_myUser.value.incVic())
+                        _myUser.value = _myUser.value.incVic()
+                        updateUserVictory(_myUser.value)
                         updatePlayerVictory(_game.value?.player1)
                     }
                     else {
-                        updateUserVictory(_myUser.value.incDef())
+                        _myUser.value = _myUser.value.incDef()
+                        updateUserVictory(_myUser.value)
                     }
 
                 }
@@ -220,10 +219,12 @@ class GameViewModel @Inject constructor(
                     _winner.value = PlayerType.SecondPlayer
 
                     if (getPlayerType() == PlayerType.SecondPlayer) {
-                        updateUserVictory(_myUser.value.incVic())
+                        _myUser.value = _myUser.value.incVic()
+                        updateUserVictory(_myUser.value)
                         updatePlayerVictory(_game.value?.player2)
                     } else {
-                        updateUserVictory(_myUser.value.incDef())
+                        _myUser.value = _myUser.value.incDef()
+                        updateUserVictory(_myUser.value)
                     }
                 }
 
@@ -319,37 +320,9 @@ class GameViewModel @Inject constructor(
         navigateToHome()
     }
 
-    private fun printResumeGame() {
 
-        Log.i("printResume", "{_uiState.value: ${_uiState.value}")
-        Log.i("printResume", "{_winner.value: ${_winner.value}")
-        Log.e("printResume", "{_game.value: ${_game.value}")
-        Log.e("printResume", "{_game.value.hallId: ${_game.value!!.hallId}")
-        Log.e("printResume", "{_game.value.hallName: ${_game.value!!.hallName}")
-        Log.e("printResume", "{_game.value.board: ${_game.value!!.board}")
-        Log.e("printResume", "{_game.value.player1: ${_game.value!!.player1}")
-        Log.e("printResume", "{_game.value.player2: ${_game.value!!.player2}")
-        Log.e("printResume", "{_game.value.playerTurn: ${_game.value!!.playerTurn}")
-        Log.e("printResume", "{_game.value.isGameReady: ${_game.value!!.isGameReady}")
-        Log.e("printResume", "{_game.value.isMyTurn: ${_game.value!!.isMyTurn}")
-        Log.e(
-            "printResume",
-            "**************************************************************************"
-        )
-    }
 
-    private fun printResumeUser() {
-        Log.d("printResume", "{_user.value: ${_myUser.value}")
-        Log.d("printResume", "{_user.value.userId: ${_myUser.value.userId}")
-        Log.d("printResume", "{_user.value.nickname: ${_myUser.value.userName}")
-        Log.d("printResume", "{_user.value.victories: ${_myUser.value.victories}")
-        Log.d("printResume", "{_user.value.defeats: ${_myUser.value.defeats}")
-        Log.d("printResume", "{_user.value.hallId: ${_myUser.value.lastHall}")
-        Log.d(
-            "printResume",
-            "**************************************************************************"
-        )
-    }
+
 }
 
 sealed class GameViewState {

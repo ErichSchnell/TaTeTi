@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 class CreateNewGame @Inject constructor(private val dataServer: DataServerService) {
     suspend operator fun invoke(gameModelData: GameModelData): String {
-        Log.d("printResume", "invoke gameModelData: $gameModelData")
+        Log.d(TAG, "invoke gameModelData: $gameModelData")
         return dataServer.createHall(gameModelData)
     }
 

@@ -2,6 +2,7 @@ package com.example.tateti_20.data.network
 
 import android.net.Uri
 import android.util.Log
+import com.example.tateti_20.domain.TAG
 import com.example.tateti_20.ui.model.UserModelUi
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
@@ -49,20 +50,20 @@ class FirebaseStorageService @Inject constructor(private val storage: FirebaseSt
     private fun createMetaData(user: UserModelUi): StorageMetadata {
         return storageMetadata {
             contentType = "image/jpeg"
-            setCustomMetadata("date","12-12-12")
+//            setCustomMetadata("date","12-12-12")
             setCustomMetadata("persona",user.userEmail)
         }
     }
 
     private fun readMetadata(uri: Uri){
-        Log.d("readMetadata", "${uri.lastPathSegment}")
+        Log.d(TAG, "${uri.lastPathSegment}")
 
         val reference = storage.reference.child(uri.lastPathSegment.toString())
 
         val response = reference.metadata.addOnSuccessListener { res ->
             res.customMetadataKeys.forEach {key ->
                 res.getCustomMetadata(key)?.let {value ->
-                    Log.d("readMetadata", "key: $key value: $value")
+                    Log.d(TAG, "key: $key value: $value")
                 }
             }
 
@@ -72,7 +73,7 @@ class FirebaseStorageService @Inject constructor(private val storage: FirebaseSt
     private fun deleteImage(uri: Uri){
         val reference = storage.reference.child(uri.lastPathSegment.toString())
         val result = reference.delete().isSuccessful
-        if(result) Log.d("deleteImage", "image deleted") else Log.d("deleteImage", "image error")
+        if(result) Log.d(TAG, "image deleted") else Log.d("deleteImage", "image error")
 
     }
 
@@ -85,7 +86,7 @@ class FirebaseStorageService @Inject constructor(private val storage: FirebaseSt
         return suspendCancellableCoroutine<Uri?> { cancellableContinuation ->
             val reference = storage.reference.child("profilePhoto/$userEmail/image")
 
-            Log.d("erich", "getProfilePhoto reference: $reference")
+            Log.d(TAG, "getProfilePhoto reference: $reference")
 
             reference.downloadUrl
                 .addOnSuccessListener { cancellableContinuation.resume(it) }

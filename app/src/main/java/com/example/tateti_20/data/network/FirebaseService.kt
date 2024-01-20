@@ -5,6 +5,7 @@ import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
 import com.example.tateti_20.domain.DataServerService
+import com.example.tateti_20.domain.TAG
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.UserModelUi
 import com.google.firebase.firestore.DocumentSnapshot
@@ -44,7 +45,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
         return suspendCancellableCoroutine { cancellableContinuation ->
             firestore.collection(PATH_USER).document(userId).set(user).addOnSuccessListener {
-                Log.i("erich", "firebase createUser ")
+                Log.i(TAG, "firebase createUser ")
                 cancellableContinuation.resume(true)
             }.addOnFailureListener {
                 cancellableContinuation.resumeWithException(it)
@@ -58,7 +59,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
                 .addOnSuccessListener { document ->
 
                     val userModel = document.toObject<UserModelData>()
-                    Log.i("erich", "firebase getUser $userModel ")
+                    Log.i(TAG, "firebase getUser $userModel ")
 
                     cancellableContinuation.resume(userModel?.toModelUi(userId))
 
@@ -78,7 +79,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
         return suspendCancellableCoroutine { cancellableContinuation ->
             firestore.collection(PATH_USER).document(userId).set(user).addOnSuccessListener {
-                Log.i("erich", "firebase update ")
+                Log.i(TAG, "firebase update ")
                 cancellableContinuation.resume(true)
             }.addOnFailureListener {
                 cancellableContinuation.resumeWithException(it)
@@ -115,7 +116,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
         return suspendCancellableCoroutine { cancellableContinuation ->
             firestore.collection(PATH_HALL).add(hall).addOnSuccessListener {
-                Log.i("erich", "firebase createHall ")
+                Log.i(TAG, "firebase createHall ")
                 cancellableContinuation.resume(it.id)
             }.addOnFailureListener {
                 cancellableContinuation.resumeWithException(it)
@@ -128,7 +129,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
                 .addOnSuccessListener { document ->
 
                     val currentGame = getGameModelData(document)
-                    Log.i("erich", "getToHall currentGame $currentGame ")
+                    Log.i(TAG, "getToHall currentGame $currentGame ")
 
                     cancellableContinuation.resume(currentGame.toModelUi(gameId))
 

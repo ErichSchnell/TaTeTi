@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class JoinToHall @Inject constructor(private val dataServerService: DataServerService) {
     suspend operator fun invoke(gameId: String) : Flow<GameModelUi>{
-        Log.i("erich", "invoke gameId: $gameId")
+        Log.i(TAG, "invoke gameId: $gameId")
 
         return dataServerService.joinToHall(gameId)
     }

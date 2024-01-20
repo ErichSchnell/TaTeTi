@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">TaTeTi_20</string>
+
+
+
+<!--    GAME-->
+    <string name="winner_game">WINNER: </string>
+    <string name="play_again">Play Again</string>
+    <string name="waiting">Waiting</string>
+    <string name="waiting_player">Waiting Player</string>
+    <string name="exit">Exit</string>
+    <string name="zeroVictories">0</string>
+    <string name="game_finished">Game Finished</string>
+    <string name="player_left_game">Player left the game</string>
+    <string name="wait">WAIT!</string>
+    <string name="leave_game">Are you wish leave the game?</string>
+    <string name="cancel">Cancel</string>
+    <string name="copided_address">Copied address!</string>
+    <string name="your_turn">Your Turn</string>
+    <string name="rival_turn">Rival Turn</string>
+    <string name="dead_heat">DEAD HEAT</string>
+    <string name="congratulations">¡CONGRATULATIONS!</string>
+    <string name="very_close">¡VERY CLOSE!</string>
+    <string name="log">log erich</string>
+    <string name="email_incorrect">Email incorrect</string>
+    <string name="email_pass_incorrect">Email or Password incorrect</string>
+    <string name="pass_short">Password should be at least 6 characters</string>
+    <string name="email_used">Email is already in use</string>
+    <string name="pass_same">passwords aren\'t same</string>
+    <string name="email_sent">Email Sent</string>
+    <string name="insert_email">Insert Email</string>
+    <!---->
+
+
+
+
 </resources>
