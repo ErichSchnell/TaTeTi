@@ -70,7 +70,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.UserModelUi
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
@@ -81,9 +80,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
+import com.example.tateti_20.R
 
 
 @Composable
@@ -105,7 +102,7 @@ fun HomeScreen(
 
     //ProfileImage
     val resultUri by homeViewModel.uriImage.collectAsState()
-    var uri: Uri? by remember{ mutableStateOf(null) }
+//    var uri: Uri? by remember{ mutableStateOf(null) }
 
     /*val intenCameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
         if(it && uri?.path?.isNotEmpty() == true){
@@ -178,9 +175,9 @@ fun HomeScreen(
                                 coroutineScope.launch { showModalDrawer.close() }
                                 homeViewModel.logout()
                             },
-                            onClickIntentCameraLauncher = {
-
-                            },
+//                            onClickIntentCameraLauncher = {
+//
+//                            },
                             onClickIntentGalleryLauncher = {
                                 intenGalleryLauncher.launch("image/*")
                             }
@@ -204,7 +201,7 @@ fun HomeScreen(
                             onClickHalls = { homeViewModel.viewHalls(navigateToHalls) },
                             onJoinGame = {   homeViewModel.joinGame(it, navigateToMach) },
                             onCreateGame = { hallName, password ->
-                                homeViewModel.onCreateGame(hallName, password, navigateToMach)
+                                homeViewModel.onCreateGame(hallName, password)
                             },
                             onClickUserName = { coroutineScope.launch { showModalDrawer.open() } }
                         )
@@ -236,7 +233,7 @@ fun ModalDrawerProfile(
     uriImage: Uri?,
     editUserName: (String) -> Unit,
     onClickLogout: () -> Unit,
-    onClickIntentCameraLauncher:()->Unit,
+//    onClickIntentCameraLauncher:()->Unit,
     onClickIntentGalleryLauncher:()->Unit,
 ){
     Column(modifier = Modifier
@@ -248,7 +245,7 @@ fun ModalDrawerProfile(
             Modifier.align(Alignment.CenterHorizontally),
             isLoading,
             uriImage,
-            onClickIntentCameraLauncher = onClickIntentCameraLauncher,
+//            onClickIntentCameraLauncher = onClickIntentCameraLauncher,
             onClickIntentGalleryLauncher = onClickIntentGalleryLauncher,
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -267,12 +264,11 @@ fun ModalProfilePhoto(
     modifier: Modifier,
     isLoading: Boolean,
     uriImage: Uri?,
-    onClickIntentCameraLauncher:()->Unit,
+//    onClickIntentCameraLauncher:()->Unit,
     onClickIntentGalleryLauncher:()->Unit,
 
     ) {
     var showProfilePhoto by remember{ mutableStateOf(false) }
-    var changeProfilePhoto by remember{ mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -394,8 +390,6 @@ fun EditProfile(user: UserModelUi, editUserName:(String) -> Unit) {
 }
 @Composable
 fun ProfileData(user: UserModelUi, resultUri: Uri?, onClickUserName: () -> Unit) {
-    var editName by remember { mutableStateOf(false) }
-    var currentUserName by remember { mutableStateOf(user.userName) }
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -629,7 +623,7 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        Column() {
+        Column {
             OutlinedTextField(
                 label = { Text(text = "Hall Name", color = Orange2) },
                 modifier = Modifier
@@ -673,7 +667,7 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
                             .padding(horizontal = 24.dp)
                             .padding(top = 4.dp, bottom = 8.dp),
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {pass -> password = pass },
                         maxLines = 1,
                         singleLine = true,
                         leadingIcon = {
@@ -849,7 +843,7 @@ fun Login(modifier: Modifier, loading: Boolean,
                                 .padding(horizontal = 12.dp),
                             label = { Text(text = "password", color = Orange2) },
                             value = password,
-                            onValueChange = { password = it },
+                            onValueChange = {pass -> password = pass },
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 cursorColor = Orange1,
                                 textColor = Accent,
@@ -865,7 +859,7 @@ fun Login(modifier: Modifier, loading: Boolean,
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
-                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            visualTransformation =  PasswordVisualTransformation(), //if (isPasswordVisible) VisualTransformation.None else
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
                         OutlinedTextField(
@@ -874,7 +868,7 @@ fun Login(modifier: Modifier, loading: Boolean,
                                 .padding(horizontal = 12.dp),
                             label = { Text(text = "confirm password", color = Orange2) },
                             value = verifyPassword,
-                            onValueChange = { verifyPassword = it },
+                            onValueChange = {pass -> verifyPassword = pass },
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 cursorColor = Orange1,
                                 textColor = Accent,
@@ -901,7 +895,7 @@ fun Login(modifier: Modifier, loading: Boolean,
                             .padding(horizontal = 12.dp),
                         label = { Text(text = "password", color = Orange2) },
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {pass -> password = pass },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             cursorColor = Orange1,
                             textColor = Accent,
@@ -1026,10 +1020,10 @@ fun LoadingDate(loading:Boolean = false) {
 *
 * */
 
-private fun generateFile(): File {
+/*private fun generateFile(): File {
     val name = "PhotoCompose_" + SimpleDateFormat("yyyyMMdd_hhmmss").format(Date())
     return File.createTempFile(name,".jpg")
-}
+}*/
 /*
 *
 * */

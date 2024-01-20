@@ -2,11 +2,8 @@ package com.example.tateti_20.ui.home
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.res.stringResource
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tateti_20.R
 import com.example.tateti_20.data.network.AuthService
 import com.example.tateti_20.data.network.FirebaseStorageService
 import com.example.tateti_20.domain.CreateNewGame
@@ -20,6 +17,14 @@ import com.example.tateti_20.domain.UpdateUser
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.example.tateti_20.ui.theme.string_email_incorrect
+import com.example.tateti_20.ui.theme.string_email_pass_incorrect
+import com.example.tateti_20.ui.theme.string_email_sent
+import com.example.tateti_20.ui.theme.string_email_used
+import com.example.tateti_20.ui.theme.string_insert_email
+import com.example.tateti_20.ui.theme.string_log
+import com.example.tateti_20.ui.theme.string_pass_same
+import com.example.tateti_20.ui.theme.string_pass_short
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,13 +32,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Objects
 import javax.inject.Inject
 
+
+private const val TAG = string_log
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -53,8 +55,6 @@ class HomeViewModel @Inject constructor(
     private val authService: AuthService,
     private val storageService: FirebaseStorageService
 ) : ViewModel() {
-
-    val TAG = R.string.log.toString()
 
     private val _uiState = MutableStateFlow<HomeViewState>(HomeViewState.LOADING)
     val uiState: StateFlow<HomeViewState> = _uiState
@@ -109,7 +109,7 @@ class HomeViewModel @Inject constructor(
 /*
     *-------------- GAME ----------------
     */
-    fun onCreateGame(hallName: String, password: String, navigateToMach: (String, String) -> Unit) {
+    fun onCreateGame(hallName: String, password: String) {
         val newGame = getNewGame(hallName = hallName, password = password)
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -175,16 +175,16 @@ class HomeViewModel @Inject constructor(
                     Log.e(TAG, "${e.message}")
                     when(e.message){
                         "The email address is badly formatted." -> {
-                            _showToast.value = R.string.email_incorrect.toString()
+                            _showToast.value = string_email_incorrect
                         }
                         "An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]" -> {
-                            _showToast.value = R.string.email_pass_incorrect.toString()
+                            _showToast.value = string_email_pass_incorrect
                         }
                         "The given password is invalid. [ Password should be at least 6 characters ]" -> {
-                            _showToast.value = R.string.pass_short.toString()
+                            _showToast.value = string_pass_short
                         }
                         "The email address is already in use by another account." -> {
-                            _showToast.value = R.string.email_used.toString()
+                            _showToast.value = string_email_used
                         }
                         else -> {
                         }
@@ -194,7 +194,7 @@ class HomeViewModel @Inject constructor(
                 _loading.value = false
             }
         } else {
-            _showToast.value = R.string.pass_same.toString()
+            _showToast.value = string_pass_same
         }
 
     }
@@ -212,10 +212,10 @@ class HomeViewModel @Inject constructor(
                 Log.e(TAG, "${e.message}")
                 when(e.message){
                     "The email address is badly formatted." -> {
-                        _showToast.value = R.string.email_incorrect.toString()
+                        _showToast.value = string_email_incorrect
                     }
                     "An internal error has occurred. [ INVALID_LOGIN_CREDENTIALS ]" -> {
-                        _showToast.value = R.string.email_pass_incorrect.toString()
+                        _showToast.value = string_email_pass_incorrect
                     }
                     else -> {
 
@@ -232,17 +232,17 @@ class HomeViewModel @Inject constructor(
                 _loading.value = true
                 try {
                     if (authService.changePassword(email)){
-                        _showToast.value = R.string.email_sent.toString()
+                        _showToast.value = string_email_sent
                     }
 
                 } catch (e: Exception) {
                     Log.e(TAG, "${e.message}")
-                    _showToast.value = R.string.email_incorrect.toString()
+                    _showToast.value = string_email_incorrect
                 }
                 _loading.value = false
             }
         } else {
-            _showToast.value = R.string.insert_email.toString()
+            _showToast.value = string_insert_email
         }
     }
 
@@ -323,7 +323,6 @@ class HomeViewModel @Inject constructor(
                 val result = async { setUser(user) }.await()
 
                 if(result){
-                    Log.e(TAG, "$result")
                     _user.value = user
                     _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }
@@ -339,7 +338,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun clearNavigateToHall() {
-        _navigateToHall.value = _navigateToHall.value.copy(false)
+        _navigateToHall.value = _navigateToHall.value.copy(state = false)
     }
 
     fun editUserName(newUserName: String) {
@@ -349,7 +348,6 @@ class HomeViewModel @Inject constructor(
                 val result = async { setUser(_user.value.copy(userName = newUserName)) }.await()
 
                 if(result){
-                    Log.e(TAG, "$result")
                     _user.value = user.value.copy(userName = newUserName)
 //                    _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }

@@ -2,8 +2,8 @@ package com.example.tateti_20.data.network
 
 import android.net.Uri
 import android.util.Log
-import com.example.tateti_20.domain.TAG
 import com.example.tateti_20.ui.model.UserModelUi
+import com.example.tateti_20.ui.theme.string_log
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.UploadTask
@@ -12,11 +12,11 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.wait
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+private const val TAG = string_log
 class FirebaseStorageService @Inject constructor(private val storage: FirebaseStorage) {
 
     fun uploadBasicImage(uri: Uri) {

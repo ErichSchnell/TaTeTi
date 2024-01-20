@@ -5,9 +5,9 @@ import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
 import com.example.tateti_20.domain.DataServerService
-import com.example.tateti_20.domain.TAG
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.UserModelUi
+import com.example.tateti_20.ui.theme.string_log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,6 +20,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+
+private const val TAG = string_log
 
 class FirebaseService @Inject constructor(private val firestore: FirebaseFirestore) : DataServerService {
 

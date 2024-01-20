@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -41,14 +40,12 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.GameModelUi
@@ -59,6 +56,23 @@ import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.BlueLink
 import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
+import com.example.tateti_20.ui.theme.string_cancel
+import com.example.tateti_20.ui.theme.string_congratulations
+import com.example.tateti_20.ui.theme.string_copided_address
+import com.example.tateti_20.ui.theme.string_dead_heat
+import com.example.tateti_20.ui.theme.string_exit
+import com.example.tateti_20.ui.theme.string_game_finished
+import com.example.tateti_20.ui.theme.string_leave_game
+import com.example.tateti_20.ui.theme.string_play_again
+import com.example.tateti_20.ui.theme.string_player_left_game
+import com.example.tateti_20.ui.theme.string_rival_turn
+import com.example.tateti_20.ui.theme.string_very_close
+import com.example.tateti_20.ui.theme.string_wait
+import com.example.tateti_20.ui.theme.string_waiting
+import com.example.tateti_20.ui.theme.string_waiting_player
+import com.example.tateti_20.ui.theme.string_winner_game
+import com.example.tateti_20.ui.theme.string_your_turn
+import com.example.tateti_20.ui.theme.string_zeroVictories
 
 @Composable
 fun GameScreen(
@@ -128,16 +142,16 @@ fun GameScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = stringResource(id = R.string.game_finished), fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                    Text(text = string_game_finished, fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(text = stringResource(id = R.string.player_left_game), fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
+                    Text(text = string_player_left_game, fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     TextButton(modifier = Modifier
                         .align(Alignment.End)
                         .padding(end = 12.dp), onClick = { gameViewModel.closeGame(navigateToHome) }) {
-                        Text(text = stringResource(id = R.string.exit), color = Accent)
+                        Text(text = string_exit, color = Accent)
                     }
                 }
             }
@@ -163,21 +177,21 @@ fun AlertCloseGame(onClickCancel: () -> Unit, onClickExit: () -> Unit) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = stringResource(id = R.string.wait), fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                Text(text = string_wait, fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(text = stringResource(id = R.string.leave_game), fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
+                Text(text = string_leave_game, fontSize = 16.sp, color = Orange2, fontWeight = FontWeight.Light)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row (modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)){
                     TextButton( onClick = { onClickCancel() }) {
-                        Text(text = stringResource(id = R.string.cancel), color = Accent)
+                        Text(text = string_cancel, color = Accent)
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     TextButton(  onClick = { onClickExit() }) {
-                        Text(text = stringResource(id = R.string.exit), color = Accent)
+                        Text(text = string_exit, color = Accent)
                     }
                 }
             }
@@ -223,7 +237,7 @@ fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
                     clipboard.setText(AnnotatedString(game.hallId))
-                    Toast.makeText(context, R.string.copided_address.toString(), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, string_copided_address, Toast.LENGTH_SHORT).show()
                 }
             ){
                 Text(
@@ -284,16 +298,16 @@ fun Board(game: GameModelUi?, onClickItem: (Int) -> Unit) {
 
             val turno = if(game.isGameReady){
                 if (game.player1?.resetGame == true && game.player2?.resetGame == false ){
-                    "${stringResource(id = R.string.waiting)} ${game.player2.userName}"
+                    "$string_waiting ${game.player2.userName}"
                 } else if(game.player1?.resetGame == false && game.player2?.resetGame == true ){
-                    "${stringResource(id = R.string.waiting)} ${game.player1.userName}"
+                    "$string_waiting ${game.player1.userName}"
                 } else if (game.isMyTurn) {
-                    stringResource(id = R.string.your_turn)
+                    string_your_turn
                 } else {
-                    stringResource(id = R.string.rival_turn)
+                    string_rival_turn
                 }
             } else {
-                stringResource(id = R.string.waiting_player)
+                string_waiting_player
             }
 
             Row (verticalAlignment = Alignment.CenterVertically){
@@ -337,9 +351,9 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
     val currentWinner = when (winner) {
         PlayerType.FirstPlayer -> game.player1?.userName
         PlayerType.SecondPlayer -> game.player2?.userName
-        PlayerType.Empty -> stringResource(id = R.string.dead_heat)
+        PlayerType.Empty -> string_dead_heat
     }
-    val title = if(winner != PlayerType.Empty) stringResource(id = R.string.congratulations) else stringResource(id = R.string.very_close)
+    val title = if(winner != PlayerType.Empty) string_congratulations else string_very_close
 
     Box (
         Modifier
@@ -354,7 +368,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 .height(80.dp))
             Row (verticalAlignment = Alignment.CenterVertically){
                 if(winner != PlayerType.Empty){
-                    Text(text = stringResource(id = R.string.winner_game), fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                    Text(text = string_winner_game, fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
                 }
                 Text(text = currentWinner.orEmpty(), fontSize = 24.sp, color = Orange2, fontWeight = FontWeight.Bold)
 
@@ -388,7 +402,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 colors = ButtonDefaults.buttonColors(backgroundColor = Orange1, contentColor = Accent),
                 onClick = { resetGame() }
             ) {
-                Text(text = stringResource(id = R.string.play_again))
+                Text(text = string_play_again)
             }
 
             Spacer(modifier = Modifier
@@ -396,7 +410,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 .height(24.dp))
 
             val waitingPlayer = if(game.player1?.resetGame == true || game.player2?.resetGame == true) {
-                if (game.player1?.resetGame == true) "${stringResource(id = R.string.waiting)} ${game.player2?.userName}" else "${stringResource(id = R.string.waiting)} ${game.player1?.userName}"
+                if (game.player1?.resetGame == true) "$string_waiting ${game.player2?.userName}" else "$string_waiting ${game.player1?.userName}"
             } else {
                 ""
             }
@@ -420,7 +434,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
                 colors = ButtonDefaults.buttonColors(backgroundColor = Accent, contentColor = Orange1),
                 onClick = { closeGame() }
             ) {
-                Text(text = stringResource(id = R.string.exit))
+                Text(text = string_exit)
             }
         }
 
@@ -428,7 +442,7 @@ fun FinishGame(game: GameModelUi, winner:PlayerType, resetGame:()-> Unit, closeG
 }
 @Composable
 fun Puntaje(player: PlayerModelUi?) {
-    val currentVictories = player?.victories?.toString() ?: stringResource(id = R.string.zeroVictories)
+    val currentVictories = player?.victories?.toString() ?: string_zeroVictories
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 //        user?.let {
             Text(text = player?.userName.orEmpty(), fontSize = 20.sp, color = Orange1, fontWeight = FontWeight.Normal)

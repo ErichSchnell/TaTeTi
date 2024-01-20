@@ -1,14 +1,8 @@
 package com.example.tateti_20.ui.game
 
 import android.util.Log
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tateti_20.R
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.domain.GetToHall
 import com.example.tateti_20.domain.GetUser
@@ -27,6 +21,7 @@ import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerModelUi
 import com.example.tateti_20.ui.model.PlayerType
 import com.example.tateti_20.ui.model.UserModelUi
+import com.example.tateti_20.ui.theme.string_log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -34,9 +29,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.log
 
-private val TAG = R.string.log.toString()
+private const val TAG = string_log
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -93,13 +87,13 @@ class GameViewModel @Inject constructor(
     /*
     *   GAME
     */
-    fun getGame(hallId: String) {
+    private fun getGame(hallId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = async{ getHall(hallId) }.await()
 
             if (result.hallName.isNotEmpty()){
 
-                Log.i(TAG, "getGame result: ${result}")
+                Log.i(TAG, "getGame result: $result")
 
                 if(_myUser.value.userId == result.player1?.userId)  {
                     _player1.value = _myUser.value
@@ -329,14 +323,6 @@ sealed class GameViewState {
     object LOADING : GameViewState()
     object GAME : GameViewState()
     object FINISH : GameViewState()
-}
-
-data class PlayerVictories(
-    var player1: Int = 0,
-    var player2: Int = 0
-) {
-    fun incP1(): PlayerVictories = this.copy(player1 = player1.inc())
-    fun incP2(): PlayerVictories = this.copy(player2 = player2.inc())
 }
 
 

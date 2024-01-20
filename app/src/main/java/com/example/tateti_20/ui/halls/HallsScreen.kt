@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,10 +27,8 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,7 +48,6 @@ import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
-import com.example.tateti_20.ui.theme.BackgroundTitleHall
 import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
 
@@ -106,18 +101,6 @@ fun Halls(listHalls: List<GameModelUi?>?, onClickHall: (String) -> Unit) {
 //        Title()
         ListHalls(listHalls, onClickHall)
     }
-}
-
-@Composable
-fun Title() {
-    Text(
-        modifier = Modifier.padding(24.dp),
-        text = "SELECT YOUR FAVORITE HALL",
-        fontSize = 28.sp,
-        color = Orange1,
-        fontWeight = FontWeight.Bold
-    )
-    Divider(Modifier.fillMaxWidth(), color = Orange2)
 }
 
 @Composable
@@ -210,17 +193,15 @@ fun ItemHall(hall: GameModelUi?, onClickHall: (String) -> Unit) {
         }
     }
     if (joinGameF){
-        joinGameF = InsertPassword(hall, onClickHall = onClickHall)
+        InsertPassword(hall, onClickHall = onClickHall){
+            joinGameF = it
+        }
     }
 }
 @Composable
-fun InsertPassword(hall: GameModelUi, onClickHall: (String) -> Unit):Boolean {
-    var pass by remember {
-        mutableStateOf("")
-    }
-    var joinToGameState by remember {
-        mutableStateOf(true)
-    }
+fun InsertPassword(hall: GameModelUi, onClickHall: (String) -> Unit, showDialog: (Boolean) -> Unit) {
+    var pass by remember { mutableStateOf("") }
+    var joinToGameState by remember { mutableStateOf(true) }
 
     if (hall.isPublic){
         joinToGameState = false
@@ -257,18 +238,7 @@ fun InsertPassword(hall: GameModelUi, onClickHall: (String) -> Unit):Boolean {
 
         }
     }
-    return joinToGameState
-}
-
-@Composable
-fun NameHall(name: String) {
-    Text(
-        modifier = Modifier.padding(top = 2.dp),
-        text = name,
-        fontSize = 24.sp,
-        color = Accent,
-        fontWeight = FontWeight.Bold
-    )
+    showDialog(joinToGameState)
 }
 
 @Composable
