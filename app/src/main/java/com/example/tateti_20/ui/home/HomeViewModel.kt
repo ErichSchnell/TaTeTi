@@ -9,10 +9,12 @@ import com.example.tateti_20.data.network.FirebaseStorageService
 import com.example.tateti_20.domain.CreateNewGame
 import com.example.tateti_20.domain.CreateNewUser
 import com.example.tateti_20.domain.GetLocalProfilePhoto
+import com.example.tateti_20.domain.GetLocalProfilePhotoState
 import com.example.tateti_20.domain.GetLocalUserId
 import com.example.tateti_20.domain.GetUser
 import com.example.tateti_20.domain.SaveLocalProfilePhoto
 import com.example.tateti_20.domain.SaveLocalUserId
+import com.example.tateti_20.domain.SetProfilePhotoState
 import com.example.tateti_20.domain.UpdateUser
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.PlayerType
@@ -21,17 +23,20 @@ import com.example.tateti_20.ui.theme.string_email_incorrect
 import com.example.tateti_20.ui.theme.string_email_pass_incorrect
 import com.example.tateti_20.ui.theme.string_email_sent
 import com.example.tateti_20.ui.theme.string_email_used
+import com.example.tateti_20.ui.theme.string_exception_no_registrada
 import com.example.tateti_20.ui.theme.string_insert_email
 import com.example.tateti_20.ui.theme.string_log
 import com.example.tateti_20.ui.theme.string_pass_same
 import com.example.tateti_20.ui.theme.string_pass_short
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -43,6 +48,8 @@ class HomeViewModel @Inject constructor(
     private val getLocalUserId: GetLocalUserId,
     private val saveLocalProfilePhoto: SaveLocalProfilePhoto,
     private val getLocalProfilePhoto: GetLocalProfilePhoto,
+    private val setProfilePhoto: SetProfilePhotoState,
+    private val getLocalProfilePhotoState: GetLocalProfilePhotoState,
 //
     private val createNewGame: CreateNewGame,
 //    private val updateGame: UpdateGame,
@@ -75,105 +82,112 @@ class HomeViewModel @Inject constructor(
     val uriImage: StateFlow<Uri?> = _uriImage
 
 
-/*
-        *-------------- CONTROL DE LOGIN / RECUPERAR USER ----------------
-        */
+    /*
+            *-------------- CONTROL DE LOGIN / RECUPERAR USER ----------------
+            */
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             if (authService.isUserLogged()) {
+                try {
+                    val userId = withContext(Dispatchers.IO) { async { getLocalUserId() }.await() }
+                    Log.d(TAG, "userId: $userId")
 
-                val userId = async{ getLocalUserId() }.await()
+                    if (userId.isNotEmpty()){
+                        loadUser(userId)
+
+                        _uiState.value = HomeViewState.HOME
+                    } else logout()
 
 
+                } catch (e:Exception){ Log.e(TAG, "getLocalUserId(): ${e.message}") }
 
-                Log.i(TAG, "userId: $userId")
-
-                if (userId.isNotEmpty()){
-                    Log.i(TAG, "userId.isNotEmpty(): $userId")
-                    loadUser(userId)
-                } else {
-                    Log.i(TAG, "userId.isEmpty(): $userId")
-                    logout()
-                }
-            } else {
-                Log.i(TAG, "userId.NoLogin()")
-                _uiState.value = HomeViewState.LOGIN
-            }
+            } else { _uiState.value = HomeViewState.LOGIN }
         }
     }
-/*
-        *--------------------------------
+    /*
+            *--------------------------------
+            */
+
+
+    /*
+        *-------------- GAME ----------------
         */
-
-
-/*
-    *-------------- GAME ----------------
-    */
     fun onCreateGame(hallName: String, password: String) {
         val newGame = getNewGame(hallName = hallName, password = password)
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val hallId = async {createNewGame(newGame.toModelData())}.await()
+                val hallId = withContext(Dispatchers.IO) {
+                    async { createNewGame(newGame.toModelData()) }.await()
+                }
 
-                if(hallId.isNotEmpty()){
+                if (hallId.isNotEmpty()) {
                     updateUser(_user.value.copy(lastHall = hallId))
                     Log.i(TAG, "Sala creada: $hallId \n $newGame")
                 }
-            } catch (e:Exception){
+            } catch (e: Exception) {
                 Log.i(TAG, "exploto todo: ${e.message}")
             }
         }
     }
-    private fun getNewGame(hallId: String? = null, hallName: String, password: String) = GameModelUi(
-        hallId = hallId,
-        hallName = hallName,
 
-        board = List(9) { PlayerType.Empty },
+    private fun getNewGame(hallId: String? = null, hallName: String, password: String) =
+        GameModelUi(
+            hallId = hallId,
+            hallName = hallName,
 
-        player1 = _user.value.toPlayer(PlayerType.FirstPlayer),
-        player2 = null,
-        playerTurn = _user.value.toPlayer(PlayerType.FirstPlayer),
+            board = List(9) { PlayerType.Empty },
 
-        isPublic = password.isEmpty(),
-        password = password,
-    )
+            player1 = _user.value.toPlayer(PlayerType.FirstPlayer),
+            player2 = null,
+            playerTurn = _user.value.toPlayer(PlayerType.FirstPlayer),
+
+            isPublic = password.isEmpty(),
+            password = password,
+        )
+
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
-         navigateToMach(hallId, _user.value.userId)
+        navigateToMach(hallId, _user.value.userId)
     }
-/*
-    *--------------------------------
-    */
+    /*
+        *--------------------------------
+        */
 
     fun viewHalls(navigateToHalls: (String) -> Unit) {
         navigateToHalls(_user.value.userId)
     }
 
 
-
-
-/*
-*----------- AUTETICATION -------------
-*/
+    /*
+    *----------- AUTETICATION -------------
+    */
 
     /*
     *-------Email-------
     */
     fun singUp(email: String, password: String, verifyPassword: String) {
-        if (password == verifyPassword){
-            viewModelScope.launch(Dispatchers.IO){
+        if (password == verifyPassword) {
+            viewModelScope.launch {
                 _loading.value = true
                 try {
-                    val result = authService.register(email, password)
+                    val fireUser = withContext(Dispatchers.IO) { async { authService.register(email, password) }.await() }
+                    printFireUser(fireUser)
 
-                    result?.let {
-                        createUser(result.uid,result.email.orEmpty(),"random${(0..100000).random()}")
-                        saveLocalUserId(it.uid)
+                    if (fireUser?.email?.isNotEmpty() == true){
+                        createUser(
+                            userId = fireUser.uid,
+                            userEmail = fireUser.email.orEmpty(),
+                            userName= "random${(0..100000).random()}",
+                            photoUrl = fireUser.photoUrl
+                        )
+                        saveLocalUserId(fireUser.uid)
                     }
 
                 } catch (e: Exception) {
-                    Log.e(TAG, "${e.message}")
-                    when(e.message){
+                    Log.e(TAG, "authService.register(email, password): ${e.message}")
+                    Log.e(TAG, "authService.register(email, password): ${e.cause}")
+
+                    when (e.message) {
                         "The email address is badly formatted." -> {
                             _showToast.value = string_email_incorrect
                         }
@@ -187,6 +201,7 @@ class HomeViewModel @Inject constructor(
                             _showToast.value = string_email_used
                         }
                         else -> {
+                            _showToast.value = string_exception_no_registrada
                         }
                     }
 
@@ -198,19 +213,24 @@ class HomeViewModel @Inject constructor(
         }
 
     }
-    fun login(email: String, password: String){
+
+    fun login(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _loading.value = true
             try {
-                val result =  authService.login(email, password)
-                result?.let {
-                    loadUser(it.uid)
-                    saveLocalUserId(it.uid)
+                val fireUser = withContext(Dispatchers.IO) { async { authService.login(email, password) }.await() }
+                printFireUser(fireUser)
+
+                if (fireUser?.email?.isNotEmpty() == true){
+                    loadUser(fireUser.uid)
+
+                    saveLocalUserId(fireUser.uid)
+                    _uiState.value = HomeViewState.HOME
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "${e.message}")
-                when(e.message){
+                Log.e(TAG, "authService.login(email, password): ${e.message}")
+                when (e.message) {
                     "The email address is badly formatted." -> {
                         _showToast.value = string_email_incorrect
                     }
@@ -218,7 +238,7 @@ class HomeViewModel @Inject constructor(
                         _showToast.value = string_email_pass_incorrect
                     }
                     else -> {
-
+                        _showToast.value = string_exception_no_registrada
                     }
                 }
 
@@ -226,14 +246,16 @@ class HomeViewModel @Inject constructor(
             _loading.value = false
         }
     }
+
     fun setChangePassword(email: String) {
-        if (email.isNotEmpty()){
-            viewModelScope.launch(Dispatchers.IO) {
+        if (email.isNotEmpty()) {
+            viewModelScope.launch {
                 _loading.value = true
                 try {
-                    if (authService.changePassword(email)){
-                        _showToast.value = string_email_sent
-                    }
+                    val changePass = withContext(Dispatchers.IO) { async { authService.changePassword(email) }.await() }
+                    Log.e(TAG, "changePass: $changePass")
+
+                    if (changePass) { _showToast.value = string_email_sent }
 
                 } catch (e: Exception) {
                     Log.e(TAG, "${e.message}")
@@ -253,29 +275,37 @@ class HomeViewModel @Inject constructor(
         val gsc = authService.getGoogleClient()
         googleLauncherLogin(gsc)
     }
+
     fun loginWithGoogle(idToken: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _loading.value = true
             try {
-                val result = async{ authService.loginWithGoogle(idToken) }.await()
+                val result = withContext(Dispatchers.IO) {
+                    async { authService.loginWithGoogle(idToken) }.await()
+                }
+
                 result?.let {
-                    loadUser(it.uid){
-                        createUser(it.uid,it.email.orEmpty(),it.displayName.orEmpty())
+                    loadUser(it.uid) {
+                        createUser(it.uid, it.email.orEmpty(), it.displayName.orEmpty(), it.photoUrl)
                     }
                     saveLocalUserId(it.uid)
                 }
 
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 Log.e(TAG, "${e.message}")
             }
             _loading.value = false
         }
     }
+
     fun logout() {
-        viewModelScope.launch(Dispatchers.IO) {
-            authService.logout()
-            saveLocalUserId("")
-            saveLocalProfilePhoto(Uri.parse(""))
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                authService.logout()
+                saveLocalUserId("")
+                saveLocalProfilePhoto(Uri.parse(""))
+                setProfilePhoto(false)
+            }
         }
         _uiState.value = HomeViewState.LOGIN
     }
@@ -283,50 +313,61 @@ class HomeViewModel @Inject constructor(
     /*
     *--------- USER  ---------
     */
-    private fun loadUser(serverUserId: String, createUser:() -> Unit = {}) {
-        viewModelScope.launch(Dispatchers.IO){
+    private fun loadUser(serverUserId: String, createUser: () -> Unit = {}) {
+        viewModelScope.launch {
             try {
-                val userAux = async{ getUser(serverUserId) }.await()
+                val userAux = withContext(Dispatchers.IO) { async { getUser(serverUserId) }.await() }
+                printFireUser(userAux)
 
-                if (userAux.userEmail.isNotEmpty()){
+                if (userAux.userEmail.isNotEmpty()) {
                     _user.value = userAux
-                    loadProfilePhoto()
-                } else {
-                    createUser()
-                }
+                    if (_user.value.profilePhoto) loadProfilePhoto()
 
-            } catch(e:Exception){
+                } else { createUser() }
+
+            } catch (e: Exception) {
+                Log.e(TAG, "getUser(serverUserId): ${e.message}")
                 logout()
-                Log.e(TAG, "${e.message}")
             }
         }
     }
-    private fun createUser(userId: String, userEmail: String, userName: String){
+
+    private fun createUser(userId: String, userEmail: String, userName: String, photoUrl: Uri?) {
         val newUser = UserModelUi(userId = userId, userEmail = userEmail, userName = userName)
+        printFireUser(newUser)
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val result = async { createNewUser(newUser) }.await()
-                if(result){
+                val result = withContext(Dispatchers.IO) { async { createNewUser(newUser) }.await() }
+
+                if (result) {
                     _user.value = newUser
-                    loadProfilePhoto()
+                    if (photoUrl != null){
+                        withContext(Dispatchers.IO) {
+                            async { storageService.uploadImage(user = newUser,uri = photoUrl)}.await()
+                        }
+                    }
+                    _uiState.value = HomeViewState.HOME
                 }
-            } catch(e:Exception){
+            } catch (e: Exception) {
                 Log.e(TAG, "${e.message}")
             }
 
         }
     }
-    private fun updateUser(user:UserModelUi){
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val result = async { setUser(user) }.await()
 
-                if(result){
+    private fun updateUser(user: UserModelUi) {
+        viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    async { setUser(user) }.await()
+                }
+
+                if (result) {
                     _user.value = user
                     _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }
-            } catch(e:Exception){
+            } catch (e: Exception) {
                 Log.e(TAG, "${e.message}")
             }
         }
@@ -342,16 +383,18 @@ class HomeViewModel @Inject constructor(
     }
 
     fun editUserName(newUserName: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _loading.value = true
             try {
-                val result = async { setUser(_user.value.copy(userName = newUserName)) }.await()
+                val result = withContext(Dispatchers.IO) {
+                    async { setUser(_user.value.copy(userName = newUserName)) }.await()
+                }
 
-                if(result){
+                if (result) {
                     _user.value = user.value.copy(userName = newUserName)
 //                    _navigateToHall.value = NavigateToHall(true, user.lastHall, user.userId)
                 }
-            } catch(e:Exception){
+            } catch (e: Exception) {
                 Log.e(TAG, "${e.message}")
             }
             _loading.value = false
@@ -363,62 +406,82 @@ class HomeViewModel @Inject constructor(
         */
 
 
-
     /*
     * ----------------- STORAGE-------------------
     * */
     private fun loadProfilePhoto() {
-        viewModelScope.launch(Dispatchers.IO){
+        viewModelScope.launch {
             try {
+                val localProfilePhotoState = withContext(Dispatchers.IO) { async { getLocalProfilePhotoState() }.await() }
+                    Log.d(TAG, "localProfilePhoto: $localProfilePhotoState")
 
-                val localProfilePhoto = async{ getLocalProfilePhoto() }.await()
+                if (localProfilePhotoState){
+                    val localProfilePhoto = withContext(Dispatchers.IO) { async { getLocalProfilePhoto() }.await() }
+                    Log.d(TAG, "localProfilePhoto: $localProfilePhoto")
 
-                Log.d(TAG, "localProfilePhoto: $localProfilePhoto")
-
-                if (localProfilePhoto.toString() == ""){
-                    val currentImage = async{ storageService.getProfilePhoto(_user.value.userEmail) }.await()
-
-                    Log.e(TAG, "loadProfilePhoto: ${_uriImage.value}")
-                    _uriImage.value = currentImage
-                    _uiState.value = HomeViewState.HOME
+                    if (localProfilePhoto.toString() != "") {
+                        Log.e(TAG, "localProfilePhoto: $localProfilePhoto")
+                        _uriImage.value = localProfilePhoto
+                    }
                 } else {
-                    Log.e(TAG, "localProfilePhoto: ${_uriImage.value}")
-                    _uriImage.value = localProfilePhoto
-                    _uiState.value = HomeViewState.HOME
+                    _uriImage.value = withContext(Dispatchers.IO) { async { storageService.getProfilePhoto(_user.value.userEmail)}.await() }
                 }
 
-
-
-            } catch(e:Exception) {
-                _uriImage.value = null
-                Log.e(TAG, "loadProfilePhoto error: ${e.message}")
-                Log.e(TAG, "loadProfilePhoto error: ${_uriImage.value}")
+            } catch (e: Exception) {
+                Log.e(TAG, "getLocalProfilePhoto(): ${e.message}")
             }
         }
     }
-    fun uploadAndGetImage(uri: Uri, onSuccessDownload:(Uri)->Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+
+    fun uploadProfileImage(uri: Uri) {
+        viewModelScope.launch {
             _loading.value = true
-
             try {
-                val result =  storageService.uploadAndDownloadImage(_user.value, uri)
-                saveLocalProfilePhoto(result)
-                onSuccessDownload(result)
-
-            }catch (e:Exception){
+                _user.value = _user.value.copy(profilePhoto = true)
+                withContext(Dispatchers.IO){ async { storageService.uploadImage(_user.value, uri) }.await()}
+                withContext(Dispatchers.IO){ async { setUser(_user.value) }.await()}
+                setProfilePhoto(true)
+                saveLocalProfilePhoto(uri)
+                _uriImage.value = uri
+            } catch (e: Exception) {
                 Log.i(TAG, e.message.orEmpty())
             }
             _loading.value = false
         }
-    }
-    fun setUriImage(newUri: Uri) {
-        _uriImage.value = newUri
     }
 
     /*
         *---------------------------------------
         */
 
+}
+
+
+
+fun printFireUser(fireUser: FirebaseUser?) {
+    Log.d(TAG, "------------------- FireUser -------------------")
+    Log.d(TAG, "fireUser.uid: ${fireUser?.uid}")
+    Log.d(TAG, "fireUser.email: ${fireUser?.email}")
+    Log.d(TAG, "fireUser.isAnonymous: ${fireUser?.isAnonymous}")
+    Log.d(TAG, "fireUser.metadata: ${fireUser?.metadata}")
+    Log.d(TAG, "fireUser.multiFactor: ${fireUser?.multiFactor}")
+    Log.d(TAG, "fireUser.providerData: ${fireUser?.providerData}")
+    Log.d(TAG, "fireUser.tenantId: ${fireUser?.tenantId}")
+    Log.d(TAG, "fireUser.photoUrl: ${fireUser?.photoUrl}")
+    Log.d(TAG, "fireUser.phoneNumber: ${fireUser?.phoneNumber}")
+    Log.d(TAG, "fireUser.phoneNumber: ${fireUser?.phoneNumber}")
+    Log.d(TAG, "--------------------------------------")
+}
+fun printFireUser(User: UserModelUi?) {
+    Log.d(TAG, "------------------- User -------------------")
+    Log.d(TAG, "User.userId: ${User?.userId}")
+    Log.d(TAG, "User.userEmail: ${User?.userEmail}")
+    Log.d(TAG, "User.userName: ${User?.userName}")
+    Log.d(TAG, "User.defeats: ${User?.defeats}")
+    Log.d(TAG, "User.victories: ${User?.victories}")
+    Log.d(TAG, "User.lastHall: ${User?.lastHall}")
+    Log.d(TAG, "User.profilePhoto: ${User?.profilePhoto}")
+    Log.d(TAG, "--------------------------------------")
 }
 
 sealed class HomeViewState {
@@ -429,7 +492,7 @@ sealed class HomeViewState {
 }
 
 data class NavigateToHall(
-    val state:Boolean = false,
-    val hallId:String = "",
-    val userId:String = ""
+    val state: Boolean = false,
+    val hallId: String = "",
+    val userId: String = ""
 )

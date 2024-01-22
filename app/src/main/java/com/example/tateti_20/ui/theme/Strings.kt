@@ -22,6 +22,7 @@ const val string_dead_heat = "DEAD HEAT"
 const val string_congratulations = "¡CONGRATULATIONS!"
 const val string_very_close = "¡VERY CLOSE!"
 const val string_log = "log erich"
+
 const val string_email_incorrect = "Email incorrect"
 const val string_email_pass_incorrect = "Email or Password incorrect"
 const val string_pass_short = "Password should be at least 6 characters"
@@ -29,6 +30,7 @@ const val string_email_used = "Email is already in use"
 const val string_pass_same = "passwords aren\'t same"
 const val string_email_sent = "Email Sent"
 const val string_insert_email = "Insert Email"
+const val string_exception_no_registrada = "Without Reason"
 
 /*
 * ------------------------------------

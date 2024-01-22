@@ -28,6 +28,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val TAG = string_log
@@ -67,12 +68,14 @@ class GameViewModel @Inject constructor(
     *   USER
     */
     fun initGame(userId: String, hallId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             Log.i(TAG, "initGame: (userId: $userId \thallId: $hallId)")
             try {
-                _myUser.value = async{ getUser(userId) }.await()
+                _myUser.value = withContext(Dispatchers.IO) {
+                    async { getUser(userId) }.await()
+                }
 
-                if(_myUser.value.userEmail.isNotEmpty()){
+                if (_myUser.value.userEmail.isNotEmpty()) {
                     Log.i(TAG, "initGame _myUser.value: ${_myUser.value}")
 
                     getGame(hallId)
@@ -88,23 +91,28 @@ class GameViewModel @Inject constructor(
     *   GAME
     */
     private fun getGame(hallId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val result = async{ getHall(hallId) }.await()
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                async { getHall(hallId) }.await()
+            }
 
-            if (result.hallName.isNotEmpty()){
+            if (result.hallName.isNotEmpty()) {
 
                 Log.i(TAG, "getGame result: $result")
 
-                if(_myUser.value.userId == result.player1?.userId)  {
+                if (_myUser.value.userId == result.player1?.userId) {
                     _player1.value = _myUser.value
                 }
-                if(_myUser.value.userId != result.player1?.userId &&  result.player2 == null){
+                if (_myUser.value.userId != result.player1?.userId && result.player2 == null) {
                     _player2.value = _myUser.value
                     _game.value = result.copy(
                         player2 = _myUser.value.toPlayer(PlayerType.SecondPlayer),
                         isVisible = false
                     )
-                    updateGame(result.hallId.orEmpty() ,_game.value?.toModelData() ?: GameModelData())
+                    updateGame(
+                        result.hallId.orEmpty(),
+                        _game.value?.toModelData() ?: GameModelData()
+                    )
                 }
 
                 join(hallId)
@@ -114,17 +122,21 @@ class GameViewModel @Inject constructor(
 
     private fun join(hallId: String) {
         var showGame = true
-        viewModelScope.launch(Dispatchers.IO) {
-            joinToHall(hallId).collect{currentGame ->
+        viewModelScope.launch {
+            joinToHall(hallId).collect { currentGame ->
                 currentGame.hallId?.let {
 
                     Log.i(TAG, "join: update: $currentGame")
 
-                    if(_player1.value == null && currentGame.player1 != null){
-                        _player1.value = async { getUser(currentGame.player1.userId)}.await()
+                    if (_player1.value == null && currentGame.player1 != null) {
+                        _player1.value = withContext(Dispatchers.IO) {
+                            async { getUser(currentGame.player1.userId) }.await()
+                        }
                     }
-                    if(_player2.value == null && currentGame.player2 != null){
-                        _player2.value = async { getUser(currentGame.player2.userId)}.await()
+                    if (_player2.value == null && currentGame.player2 != null) {
+                        _player2.value = withContext(Dispatchers.IO) {
+                            async { getUser(currentGame.player2.userId) }.await()
+                        }
                     }
 
                     _game.value = currentGame.copy(
@@ -132,13 +144,13 @@ class GameViewModel @Inject constructor(
                         isMyTurn = isMyTurn(currentGame.playerTurn)
                     )
 
-                    if(_game.value?.isFinished != true){
+                    if (_game.value?.isFinished != true) {
                         verifyWinner()
                         resetBoard()
                     }
 
 
-                    if (showGame){
+                    if (showGame) {
                         showGame = false
                         _uiState.value = GameViewState.GAME
                     }
@@ -148,17 +160,19 @@ class GameViewModel @Inject constructor(
     }
 
     private fun resetBoard() {
-        viewModelScope.launch(Dispatchers.IO){
+        viewModelScope.launch {
             if (_game.value?.player1?.resetGame == true && _game.value?.player2?.resetGame == true) {
                 val player1 = _game.value?.player1?.copy(resetGame = false)
                 val player2 = _game.value?.player2?.copy(resetGame = false)
                 updateGame(
                     hallId = _game.value?.hallId.orEmpty(),
-                    gameModelData = _game.value?.copy(player1 = player1, player2 = player2)?.toModelData() ?: GameModelData()
+                    gameModelData = _game.value?.copy(player1 = player1, player2 = player2)
+                        ?.toModelData() ?: GameModelData()
                 )
             }
         }
     }
+
     private fun isMyTurn(playerTurn: PlayerModelUi?) = playerTurn?.userId == _myUser.value.userId
 
 
@@ -173,13 +187,16 @@ class GameViewModel @Inject constructor(
 
             updateGame(
                 hallId = gameAux.hallId.orEmpty(),
-                gameModelData = gameAux.copy(board = newBoard, playerTurn = getEnemyPlayer()!!).toModelData()
+                gameModelData = gameAux.copy(board = newBoard, playerTurn = getEnemyPlayer()!!)
+                    .toModelData()
             )
         }
     }
+
     private fun getEnemyPlayer(): PlayerModelUi? {
         return if (game.value?.player1?.userId == _myUser.value.userId) game.value?.player2 else game.value?.player1
     }
+
     private fun getPlayerType(): PlayerType? {
         return when {
             game.value?.player1?.userId == _myUser.value.userId -> PlayerType.FirstPlayer
@@ -200,8 +217,7 @@ class GameViewModel @Inject constructor(
                         _myUser.value = _myUser.value.incVic()
                         updateUserVictory(_myUser.value)
                         updatePlayerVictory(_game.value?.player1)
-                    }
-                    else {
+                    } else {
                         _myUser.value = _myUser.value.incDef()
                         updateUserVictory(_myUser.value)
                     }
@@ -226,16 +242,18 @@ class GameViewModel @Inject constructor(
                     _winner.value = PlayerType.Empty
                     _uiState.value = GameViewState.FINISH
 
-                    viewModelScope.launch(Dispatchers.IO){
+                    viewModelScope.launch {
                         updateGame(
                             hallId = _game.value?.hallId.orEmpty(),
-                            gameModelData = _game.value?.rstBoard()?.toModelData() ?: GameModelData()
+                            gameModelData = _game.value?.rstBoard()?.toModelData()
+                                ?: GameModelData()
                         )
                     }
                 }
             }
         }
     }
+
     private fun isSomebodyWinner(playerType: PlayerType): Boolean {
 
         if (_game.value?.player1 == null) return false
@@ -245,7 +263,7 @@ class GameViewModel @Inject constructor(
 
         val board = game.value!!.board
 
-        if (playerType != PlayerType.Empty){
+        if (playerType != PlayerType.Empty) {
             return when {
                 //Row
                 (board[0] == playerType && board[1] == playerType && board[2] == playerType) -> true
@@ -263,58 +281,72 @@ class GameViewModel @Inject constructor(
             }
         } else {
             board.forEach {
-                if(it == PlayerType.Empty) return false
+                if (it == PlayerType.Empty) return false
             }
             return true
         }
     }
+
     private fun updateUserVictory(currentUser: UserModelUi) {
         viewModelScope.launch {
             setUser(currentUser)
         }
     }
+
     private fun updatePlayerVictory(player: PlayerModelUi?) {
         val currentPlayer = player?.incVictory()
 
         viewModelScope.launch {
-            if (player?.playerType == PlayerType.FirstPlayer){
+            if (player?.playerType == PlayerType.FirstPlayer) {
                 updateGame(
                     hallId = _game.value?.hallId.orEmpty(),
-                    gameModelData = _game.value?.rstBoard(true)?.copy(player1 = currentPlayer)?.toModelData() ?: GameModelData()//currentPlayer?.toModelData() ?: PlayerModelData()
+                    gameModelData = _game.value?.rstBoard(true)?.copy(player1 = currentPlayer)
+                        ?.toModelData()
+                        ?: GameModelData()//currentPlayer?.toModelData() ?: PlayerModelData()
                 )
-            } else{
+            } else {
                 updateGame(
                     hallId = _game.value?.hallId.orEmpty(),
-                    gameModelData = _game.value?.rstBoard(true)?.copy(player2 = currentPlayer)?.toModelData() ?: GameModelData()//currentPlayer?.toModelData() ?: PlayerModelData()
+                    gameModelData = _game.value?.rstBoard(true)?.copy(player2 = currentPlayer)
+                        ?.toModelData()
+                        ?: GameModelData()//currentPlayer?.toModelData() ?: PlayerModelData()
                 )
             }
         }
     }
 
     fun resetGame() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             if (getPlayerType() == PlayerType.FirstPlayer) {
                 val player = _game.value!!.player1?.rstGame(true)
-                updateGame(_game.value!!.hallId.orEmpty(), _game.value?.copy(player1 = player)?.toModelData() ?: GameModelData())
+                updateGame(
+                    _game.value!!.hallId.orEmpty(),
+                    _game.value?.copy(player1 = player)?.toModelData() ?: GameModelData()
+                )
             } else {
                 val player = _game.value!!.player2?.rstGame(true)
-                updateGame(_game.value!!.hallId.orEmpty(), _game.value?.copy(player2 = player)?.toModelData() ?: GameModelData())
+                updateGame(
+                    _game.value!!.hallId.orEmpty(),
+                    _game.value?.copy(player2 = player)?.toModelData() ?: GameModelData()
+                )
             }
             _uiState.value = GameViewState.GAME
         }
     }
-    fun closeGame(navigateToHome:()->Unit) {
+
+    fun closeGame(navigateToHome: () -> Unit) {
         Log.d(TAG, "closeGame - _game.value?.isFinished: ${_game.value?.isFinished}")
-        if (_game.value?.isFinished == false){
-            viewModelScope.launch(Dispatchers.IO) {
+        if (_game.value?.isFinished == false) {
+            viewModelScope.launch {
                 val currentGame = _game.value?.copy(isFinished = true, isVisible = false)
-                updateGame(_game.value?.hallId.orEmpty() ,currentGame?.toModelData() ?: GameModelData())
+                updateGame(
+                    _game.value?.hallId.orEmpty(),
+                    currentGame?.toModelData() ?: GameModelData()
+                )
             }
         }
         navigateToHome()
     }
-
-
 
 
 }

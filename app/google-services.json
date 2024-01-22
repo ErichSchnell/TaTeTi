@@ -41,6 +41,43 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137510955455:android:a13b62c222c8230ee2d90a",
+        "android_client_info": {
+          "package_name": "com.example.tateti_20.release"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "137510955455-f63m4fun5e8qghfpm8qdnof03ba7d7fi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tateti_20.release",
+            "certificate_hash": "b019663544a99a26dc79f71954c4b8da6ac5990d"
+          }
+        },
+        {
+          "client_id": "137510955455-vejjg0j254f59n3tn2ar3r915ncubcvm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_MEBbLWb7lXzgnfuN3BXKIUvcLZbKkwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "137510955455-vejjg0j254f59n3tn2ar3r915ncubcvm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

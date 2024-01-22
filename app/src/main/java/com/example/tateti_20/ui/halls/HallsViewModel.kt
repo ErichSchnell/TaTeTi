@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private val TAG = "erich"
@@ -27,11 +28,13 @@ class HallsViewModel @Inject constructor(
 
     init {
         Log.d(TAG, "init")
-        viewModelScope.launch(Dispatchers.IO) {
-            getHalls().collect{
-                Log.d(TAG, "init List<GameModelUi>: $it")
-                _halls.value = it
-                _uiState.value = HallsViewState.HALLS
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                getHalls().collect{
+                    Log.d(TAG, "init List<GameModelUi>: $it")
+                    _halls.value = it
+                    _uiState.value = HallsViewState.HALLS
+                }
             }
         }
     }

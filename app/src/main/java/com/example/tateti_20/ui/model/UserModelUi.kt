@@ -11,6 +11,7 @@ data class UserModelUi(
     val defeats: Int = 0,
 
     val lastHall: String = "",
+    val profilePhoto: Boolean = false,
 ) {
     fun toModelData(): UserModelData = UserModelData(
         userEmail = userEmail,
@@ -20,6 +21,7 @@ data class UserModelUi(
         defeats = defeats,
 
         lastHall = lastHall,
+        profilePhoto = profilePhoto,
     )
     fun toPlayer(playerType: PlayerType): PlayerModelUi = PlayerModelUi(
         userId = userId,

@@ -19,9 +19,14 @@ import kotlin.coroutines.resumeWithException
 private const val TAG = string_log
 class FirebaseStorageService @Inject constructor(private val storage: FirebaseStorage) {
 
-    fun uploadBasicImage(uri: Uri) {
-        val reference = storage.reference.child(uri.lastPathSegment.orEmpty())
-        reference.putFile(uri)
+    suspend fun uploadImage(user:UserModelUi, uri: Uri): Boolean {
+        return suspendCancellableCoroutine<Boolean> { cancellableContinuation ->
+            val reference = storage.reference.child("profilePhoto/${user.userEmail}/image")
+
+            reference.putFile(uri, createMetaData(user))
+                .addOnSuccessListener{ cancellableContinuation.resume(true)}
+                    .addOnFailureListener { cancellableContinuation.resumeWithException(it) }
+        }
     }
 
     suspend fun uploadAndDownloadImage(user:UserModelUi, uri: Uri): Uri {
@@ -87,6 +92,9 @@ class FirebaseStorageService @Inject constructor(private val storage: FirebaseSt
             val reference = storage.reference.child("profilePhoto/$userEmail/image")
 
             Log.d(TAG, "getProfilePhoto reference: $reference")
+            Log.d(TAG, "getProfilePhoto bucket: ${reference.bucket}")
+            Log.d(TAG, "getProfilePhoto name: ${reference.name}")
+            Log.d(TAG, "getProfilePhoto path: ${reference.path}")
 
             reference.downloadUrl
                 .addOnSuccessListener { cancellableContinuation.resume(it) }

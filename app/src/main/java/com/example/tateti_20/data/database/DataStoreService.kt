@@ -29,18 +29,32 @@ class DataStoreService @Inject constructor(private val context: Context) : Datab
             preferences[USER_ID] = userId
         }
     }
-
     override fun getUserId(): Flow<String> {
         return context.userPreferenceDataStore.data.map { preferences ->
             preferences[USER_ID] ?: ""
         }
     }
 
+
+
+
+
+    override suspend fun setProfilePhotoState(state: Boolean) {
+        context.profilePhotoPreferenceDataStore.edit {preferences ->
+            preferences[PROFILE_PHOTO_ID] = if (state) "true" else ""
+        }
+    }
+    override fun getProfilePhotoState(): Flow<Boolean> {
+        return context.profilePhotoPreferenceDataStore.data.map { preferences ->
+            (preferences[PROFILE_PHOTO_ID] != "")
+        }
+    }
     override suspend fun saveProfilePhoto(uriImage: Uri) {
         context.profilePhotoPreferenceDataStore.edit {preferences ->
             preferences[PROFILE_PHOTO_ID] = uriImage.toString()
         }
     }
+
 
     override fun getProfilePhoto(): Flow<Uri> {
         return context.profilePhotoPreferenceDataStore.data.map { preferences ->

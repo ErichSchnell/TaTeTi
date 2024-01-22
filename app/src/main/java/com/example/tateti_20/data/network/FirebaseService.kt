@@ -42,7 +42,8 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             "victories" to userModelData.victories,
             "defeats" to userModelData.defeats,
 
-            "lastHall" to userModelData.lastHall
+            "lastHall" to userModelData.lastHall,
+            "profilePhoto" to userModelData.profilePhoto
         )
 
         return suspendCancellableCoroutine { cancellableContinuation ->
@@ -60,13 +61,29 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             firestore.collection(PATH_USER).document(userId).get()
                 .addOnSuccessListener { document ->
 
-                    val userModel = document.toObject<UserModelData>()
+                    val userModel = getUserModelData(document)
                     Log.i(TAG, "firebase getUser $userModel ")
 
-                    cancellableContinuation.resume(userModel?.toModelUi(userId))
+                    cancellableContinuation.resume(userModel.toModelUi(userId))
 
                 }.addOnFailureListener { cancellableContinuation.resumeWithException(it) }
         }
+    }
+
+    private fun getUserModelData(snapshot: DocumentSnapshot):UserModelData{
+
+        val currentUser = snapshot.toObject(UserModelData::class.java) ?: UserModelData()
+        Log.i("erich", "getUserModelData currentUser: $currentUser ")
+
+        currentUser.userEmail?.let {
+            val result = currentUser.copy(
+                profilePhoto = snapshot.getBoolean("profilePhoto"),
+            )
+            Log.i("erich", "getUserModelData result: $result ")
+            return result
+        }
+
+        return currentUser
     }
     override suspend fun updateUser(userId: String, userData: UserModelData): Boolean {
         val user = hashMapOf(
@@ -76,7 +93,8 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
             "victories" to userData.victories,
             "defeats" to userData.defeats,
 
-            "lastHall" to userData.lastHall
+            "lastHall" to userData.lastHall,
+            "profilePhoto" to userData.profilePhoto
         )
 
         return suspendCancellableCoroutine { cancellableContinuation ->

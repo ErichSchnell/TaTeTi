@@ -112,7 +112,7 @@ fun HomeScreen(
 
     val intenGalleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         if(it?.path?.isNotEmpty() == true){
-            homeViewModel.uploadAndGetImage(it){newUri -> homeViewModel.setUriImage(newUri)}
+            homeViewModel.uploadProfileImage(it)
         }
     }
 
