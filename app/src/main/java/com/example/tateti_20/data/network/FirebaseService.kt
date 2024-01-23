@@ -72,18 +72,25 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
 
     private fun getUserModelData(snapshot: DocumentSnapshot):UserModelData{
 
-        val currentUser = snapshot.toObject(UserModelData::class.java) ?: UserModelData()
-        Log.i("erich", "getUserModelData currentUser: $currentUser ")
+        Log.i(TAG, "getUserModelData snapshot: ${snapshot.data}")
 
-        currentUser.userEmail?.let {
-            val result = currentUser.copy(
-                profilePhoto = snapshot.getBoolean("profilePhoto"),
-            )
-            Log.i("erich", "getUserModelData result: $result ")
-            return result
-        }
+        val userEmailAux = snapshot.getString("userEmail")
+        val userNameAux = snapshot.getString("userName")
+        val victoriesAux = (snapshot.get("victories") as? Long)?.toInt()
+        val defeatsAux = (snapshot.get("defeats") as? Long)?.toInt()
+        val lastHallAux = snapshot.getString("lastHall")
+        val profilePhotoAux = snapshot.getBoolean("profilePhoto")
 
-        return currentUser
+        val result = UserModelData(
+            userEmail =  userEmailAux,
+        userName =  userNameAux,
+        victories =  victoriesAux,
+        defeats =  defeatsAux,
+        lastHall =  lastHallAux,
+        profilePhoto =  profilePhotoAux
+        )
+
+        return result
     }
     override suspend fun updateUser(userId: String, userData: UserModelData): Boolean {
         val user = hashMapOf(
