@@ -93,7 +93,7 @@ class HomeViewModel @Inject constructor(
                     Log.d(TAG, "userId: $userId")
 
                     if (userId.isNotEmpty()){
-                        loadUser(userId)
+                        loadUser(userId){logout()}
 
                         _uiState.value = HomeViewState.HOME
                     } else logout()
@@ -144,6 +144,9 @@ class HomeViewModel @Inject constructor(
 
             isPublic = password.isEmpty(),
             password = password,
+            isFinished = false,
+            isVisible = true,
+            winner = 0
         )
 
     fun joinGame(hallId: String, navigateToMach: (String, String) -> Unit) {
@@ -222,7 +225,7 @@ class HomeViewModel @Inject constructor(
                 printFireUser(fireUser)
 
                 if (fireUser?.email?.isNotEmpty() == true){
-                    loadUser(fireUser.uid)
+                    loadUser(fireUser.uid){logout()}
 
                     saveLocalUserId(fireUser.uid)
                     _uiState.value = HomeViewState.HOME
@@ -316,7 +319,7 @@ class HomeViewModel @Inject constructor(
     private fun loadUser(serverUserId: String, createUser: () -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val userAux = withContext(Dispatchers.IO) { async { getUser(serverUserId) }.await() }
+                val userAux = withContext(Dispatchers.IO) { getUser(serverUserId)  }
                 printFireUser(userAux)
 
                 if (userAux.userEmail.isNotEmpty()) {
@@ -338,7 +341,7 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) { async { createNewUser(newUser) }.await() }
+                val result = withContext(Dispatchers.IO) { createNewUser(newUser) }
 
                 if (result) {
                     _user.value = newUser
@@ -468,7 +471,6 @@ fun printFireUser(fireUser: FirebaseUser?) {
     Log.d(TAG, "fireUser.providerData: ${fireUser?.providerData}")
     Log.d(TAG, "fireUser.tenantId: ${fireUser?.tenantId}")
     Log.d(TAG, "fireUser.photoUrl: ${fireUser?.photoUrl}")
-    Log.d(TAG, "fireUser.phoneNumber: ${fireUser?.phoneNumber}")
     Log.d(TAG, "fireUser.phoneNumber: ${fireUser?.phoneNumber}")
     Log.d(TAG, "--------------------------------------")
 }

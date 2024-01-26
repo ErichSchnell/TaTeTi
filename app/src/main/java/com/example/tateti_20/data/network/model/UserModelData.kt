@@ -1,25 +1,29 @@
 package com.example.tateti_20.data.network.model
 
 import com.example.tateti_20.ui.model.UserModelUi
+import com.google.errorprone.annotations.Keep
+import com.google.firebase.firestore.PropertyName
 
-
+@Keep
 data class UserModelData(
-    val userEmail:String? = null,
-    val userName:String? = null,
+    @get:PropertyName("userEmail") @PropertyName("userEmail") val userEmail: String? = null,
+    @get:PropertyName("userName") @PropertyName("userName") val userName: String? = null,
 
-    val victories: Int? = null,
-    val defeats: Int? = null,
+    @get:PropertyName("victories") @PropertyName("victories") val victories: Int? = null,
+    @get:PropertyName("defeats") @PropertyName("defeats") val defeats: Int? = null,
 
-    val lastHall: String? = null,
-    val profilePhoto: Boolean? = null,
+    @get:PropertyName("lastHall") @PropertyName("lastHall") val lastHall: String? = null,
+    @get:PropertyName("profilePhoto") @PropertyName("profilePhoto") val profilePhoto: Boolean? = null
 ) {
-    fun toModelUi(userId:String): UserModelUi = UserModelUi(
+    constructor(): this(null,null,null,null,null,null)
+    fun toModelUi(userId: String): UserModelUi = UserModelUi(
         userId = userId,
-        userName = userName.orEmpty(),
         userEmail = userEmail.orEmpty(),
+        userName = userName.orEmpty(),
 
         victories = victories ?: 0,
         defeats = defeats ?: 0,
+
         lastHall = lastHall.orEmpty(),
         profilePhoto = profilePhoto ?: false
     )

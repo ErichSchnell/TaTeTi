@@ -7,10 +7,5 @@ import javax.inject.Inject
 
 private const val TAG = string_log
 class GetUser  @Inject constructor(private val dataServer: DataServerService) {
-    suspend operator fun invoke(userId: String): UserModelUi {
-        val userAux = dataServer.getUser(userId) ?: UserModelUi()
-        Log.i(TAG, "invoke userAux: $userAux")
-
-        return userAux
-    }
+    suspend operator fun invoke(userId: String) = dataServer.getUser(userId) ?: UserModelUi()
 }

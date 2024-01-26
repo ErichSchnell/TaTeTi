@@ -92,33 +92,44 @@ class GameViewModel @Inject constructor(
     */
     private fun getGame(hallId: String) {
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                async { getHall(hallId) }.await()
-            }
-
-            if (result.hallName.isNotEmpty()) {
-
-                Log.i(TAG, "getGame result: $result")
-
-                if (_myUser.value.userId == result.player1?.userId) {
-                    _player1.value = _myUser.value
-                }
-                if (_myUser.value.userId != result.player1?.userId && result.player2 == null) {
-                    _player2.value = _myUser.value
-                    _game.value = result.copy(
-                        player2 = _myUser.value.toPlayer(PlayerType.SecondPlayer),
-                        isVisible = false
-                    )
-                    updateGame(
-                        result.hallId.orEmpty(),
-                        _game.value?.toModelData() ?: GameModelData()
-                    )
+            
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val date = async { getHall(hallId) }.await()
+                    printGame(date)
+                    date
                 }
 
-                join(hallId)
+                if (result.hallName.isNotEmpty()) {
+
+                    Log.i(TAG, "getGame result: $result")
+
+                    if (_myUser.value.userId == result.player1?.userId) {
+                        _player1.value = _myUser.value
+                    }
+                    if (_myUser.value.userId != result.player1?.userId && result.player2 == null) {
+                        _player2.value = _myUser.value
+                        _game.value = result.copy(
+                            player2 = _myUser.value.toPlayer(PlayerType.SecondPlayer),
+                            isVisible = false
+                        )
+                        updateGame(
+                            result.hallId.orEmpty(),
+                            _game.value?.toModelData() ?: GameModelData()
+                        )
+                    }
+
+                    join(hallId)
+                } else {
+                    Log.i(TAG, "getGame: test 2 ")
+                }
+            } catch (e:Exception){
+                Log.i(TAG, "getGame: se pudrio todo: ${e.message}")
             }
+            
         }
     }
+
 
     private fun join(hallId: String) {
         var showGame = true
@@ -346,6 +357,26 @@ class GameViewModel @Inject constructor(
             }
         }
         navigateToHome()
+    }
+
+
+
+
+
+    private fun printGame(game: GameModelUi) {
+        Log.d(TAG, "---------------------- GAME -------------------")
+        Log.d(TAG, "game.hallId: ${game.hallId}")
+        Log.d(TAG, "game.hallName: ${game.hallName}")
+        Log.d(TAG, "game.board: ${game.board}")
+        Log.d(TAG, "game.player1: ${game.player1}")
+        Log.d(TAG, "game.player2: ${game.player2}")
+        Log.d(TAG, "game.playerTurn: ${game.playerTurn}")
+        Log.d(TAG, "game.isPublic: ${game.isPublic}")
+        Log.d(TAG, "game.password: ${game.password}")
+        Log.d(TAG, "game.isFinished: ${game.isFinished}")
+        Log.d(TAG, "game.isVisible: ${game.isVisible}")
+        Log.d(TAG, "game.winner: ${game.winner}")
+        Log.d(TAG, "-----------------------------------------------")
     }
 
 

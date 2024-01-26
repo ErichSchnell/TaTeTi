@@ -1,6 +1,5 @@
 package com.example.tateti_20.ui.model
 
-import com.example.tateti_20.data.network.model.BoardModelData
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 
@@ -18,12 +17,12 @@ data class GameModelUi(
     val isPublic:Boolean,
     val password:String,
 
-    val isFinished:Boolean = false,
-    val isVisible:Boolean = true,
-    val winner:Int = 0,
+    val isFinished:Boolean,
+    val isVisible:Boolean,
+    val winner:Int,
 
     val isGameReady: Boolean = false,
-    val isMyTurn: Boolean = false,
+    val isMyTurn: Boolean = false
 ) {
     fun toModelData(): GameModelData {
         return GameModelData(
@@ -40,20 +39,12 @@ data class GameModelUi(
 
             isFinished = isFinished,
             isVisible = isVisible,
-            winner = winner,
+            winner = winner
         )
     }
     fun rstBoard(value: Boolean = false) = this.copy(board = List(9) {PlayerType.Empty})
 }
 
-
-data class BoardModelUi(
-    val board: List<PlayerType>
-){
-    fun toModelData() = BoardModelData(
-        board = board.map {it.id}
-    )
-}
 
 data class PlayerModelUi(
     val userId:String = "",
@@ -63,7 +54,7 @@ data class PlayerModelUi(
     val victories: Int = 0,
     val resetGame: Boolean = false
 ) {
-    fun toModelData(): PlayerModelData = PlayerModelData(
+    fun toModelData() = PlayerModelData(
         userId = userId,
         userName = userName,
         playerType = playerType.id,

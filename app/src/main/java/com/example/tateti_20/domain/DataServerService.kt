@@ -14,9 +14,8 @@ interface DataServerService {
     ------------------ USER ------------------
     */
     suspend fun createUser(userId:String, userModelData: UserModelData): Boolean
-    suspend fun getUser(userId: String): UserModelUi?
     suspend fun updateUser(userId: String, userData: UserModelData):Boolean
-    fun joinToUser(userId: String)
+    suspend fun getUser(userId: String): UserModelUi?
     /*
     ------------------------------------
     */
