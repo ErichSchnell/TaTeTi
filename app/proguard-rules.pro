@@ -19,3 +19,36 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep the User data class
+-keep class com.example.tateti_20.data.network.model.GameModelData { *; }
+
+# Keep the default constructor for classes involved in deserialization
+-keepclassmembers class com.example.tateti_20.data.network.model.GameModelData {
+    <init>();
+}
+# Keep the User data class
+-keep class com.example.tateti_20.data.network.model.PlayerModelData { *; }
+
+# Keep the default constructor for classes involved in deserialization
+-keepclassmembers class com.example.tateti_20.data.network.model.PlayerModelData {
+    <init>();
+}
+# Keep the User data class
+-keep class com.example.tateti_20.data.network.model.UserModelData { *; }
+
+# Keep the default constructor for classes involved in deserialization
+-keepclassmembers class com.example.tateti_20.data.network.model.UserModelData {
+    <init>();
+}
+
+# Keep the names of classes/members we are using for Firebase serialization/deserialization
+-keepnames class com.google.firebase.** {*;}
+-keepnames class com.google.android.gms.** {*;}
+
+# Keep the Firestore annotations
+-keepattributes *Annotation*,EnclosingMethod
+
+# Keep the required methods for Firestore to work properly
+-keep class com.google.firebase.firestore.** { *; }
+-keepclassmembers class com.google.firebase.firestore.** { *; }
