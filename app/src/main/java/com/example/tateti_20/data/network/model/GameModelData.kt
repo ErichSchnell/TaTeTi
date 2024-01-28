@@ -8,20 +8,20 @@ import com.google.firebase.firestore.PropertyName
 
 @Keep
 data class GameModelData (
-    /*@get:PropertyName("hallName") @PropertyName("hallName")*/ val hallName: String? = null,
+    val hallName: String? = null,
 
-    /*@get:PropertyName("board") @PropertyName("board")*/ val board: List<Int?>? = null,
+    val board: List<Int?>? = null,
 
-    /*@get:PropertyName("player1") @PropertyName("player1")*/ val player1: PlayerModelData? = null,
-    /*@get:PropertyName("player2") @PropertyName("player2")*/ val player2: PlayerModelData? = null,
-    /*@get:PropertyName("playerTurn") @PropertyName("playerTurn")*/ val playerTurn: PlayerModelData? = null,
+    val player1: PlayerModelData? = null,
+    val player2: PlayerModelData? = null,
+    val playerTurn: PlayerModelData? = null,
 
-    /*@get:PropertyName("isPublic") @PropertyName("isPublic")*/ @field:JvmField val isPublic:Boolean? = null,
-    /*@get:PropertyName("password") @PropertyName("password")*/  val password:String? = null,
+    @field:JvmField val isPublic:Boolean? = null,
+    val password:String? = null,
 
-    /*@get:PropertyName("isFinished") @PropertyName("isFinished")*/ @field:JvmField val isFinished:Boolean? = null,
-    /*@get:PropertyName("isVisible") @PropertyName("isVisible")*/ @field:JvmField val isVisible:Boolean? = null,
-    /*@get:PropertyName("winner") @PropertyName("winner")*/ val winner:Int? = null
+    @field:JvmField val isFinished:Boolean? = null,
+    @field:JvmField val isVisible:Boolean? = null,
+    val winner:Int? = null
 ) {
     constructor(): this(null,null,null,null,null,null,null,null,null,null,)
     fun toModelUi(hallId: String): GameModelUi {
@@ -47,15 +47,13 @@ data class GameModelData (
 
 @Keep
 data class PlayerModelData(
-    /*@get:PropertyName("userId") @PropertyName("userId")*/ val userId: String? = null,
-    /*@get:PropertyName("userName") @PropertyName("userName")*/ val userName: String? = null,
+    val userId: String? = null,
+    val userName: String? = null,
 
-    /*@get:PropertyName("playerType") @PropertyName("playerType")*/ val playerType:Int? = null,
-    /*@get:PropertyName("victories") @PropertyName("victories")*/ val victories:Int? = null,
-    /*@get:PropertyName("resetGame") @PropertyName("resetGame")*/ val resetGame: Boolean? = null
+    val playerType:Int? = null,
+    val victories:Int? = null,
+    val resetGame: Boolean? = null
 ) {
-    constructor(): this(null,null,null,null,null)
-
     fun toModelUi(): PlayerModelUi {
         return PlayerModelUi(
             userId = userId.orEmpty(),
