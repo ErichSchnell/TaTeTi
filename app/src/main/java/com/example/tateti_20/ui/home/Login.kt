@@ -54,32 +54,35 @@ fun Login(
     onGoogleLoginSelected: () -> Unit,
     onClickSingUp: (String, String, String) -> Unit
 ) {
-    var createUser by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var verifyPassword by remember { mutableStateOf("") }
+        var createUser by remember { mutableStateOf(false) }
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        var verifyPassword by remember { mutableStateOf("") }
 
     ShimmerLogin(modifier = modifier, isLoading = isLoading) {
         Column(modifier = modifier, verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             Email(
-                isLoading = isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-            ) { email = it }
-            Password(
-                isLoading = isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-            ) { password = it }
-            VerifyPassword(
-                isLoading = isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                isVisible = createUser
-            ) { verifyPassword = it }
+                value = email,
+                onValueChange = { email = it }
+            )
+            Password(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                value = password,
+                onValueChange = { password = it }
+            )
+            VerifyPassword(
+                isVisible = createUser,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                value = verifyPassword,
+                onValueChange = { verifyPassword = it }
+            )
 
             Spacer(modifier = Modifier.height(22.dp))
 
@@ -108,16 +111,13 @@ fun Login(
 
 
 @Composable
-fun Email(isLoading: Boolean, modifier: Modifier, content: (String) -> Unit) {
+fun Email(modifier: Modifier, value: String, onValueChange: (String) -> Unit) {
     var email by remember { mutableStateOf("") }
     OutlinedTextField(
         modifier = modifier,
         label = { Text(text = "email", color = Orange2) },
-        value = email,
-        onValueChange = {
-            email = it
-            content(email)
-        },
+        value = value,
+        onValueChange = { onValueChange(it) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             cursorColor = Orange1,
             textColor = Accent,
@@ -137,17 +137,14 @@ fun Email(isLoading: Boolean, modifier: Modifier, content: (String) -> Unit) {
     )
 }
 @Composable
-fun Password(isLoading: Boolean, modifier: Modifier, content: (String) -> Unit) {
+fun Password(modifier: Modifier, value: String, onValueChange: (String) -> Unit) {
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     OutlinedTextField(
         modifier = modifier,
         label = { Text(text = "password", color = Orange2) },
-        value = password,
-        onValueChange = { pass ->
-            password = pass
-            content(password)
-        },
+        value = value,
+        onValueChange = { onValueChange(it) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             cursorColor = Orange1,
             textColor = Accent,
@@ -180,10 +177,10 @@ fun Password(isLoading: Boolean, modifier: Modifier, content: (String) -> Unit) 
 }
 @Composable
 fun VerifyPassword(
-    isLoading: Boolean,
     modifier: Modifier,
     isVisible: Boolean,
-    content: (String) -> Unit
+    value: String,
+    onValueChange: (String) -> Unit
 ) {
     var verifyPassword by remember { mutableStateOf("") }
 
@@ -192,11 +189,8 @@ fun VerifyPassword(
             OutlinedTextField(
                 modifier = modifier,
                 label = { Text(text = "confirm password", color = Orange2) },
-                value = verifyPassword,
-                onValueChange = { pass ->
-                    verifyPassword = pass
-                    content(verifyPassword)
-                },
+                value = value,
+                onValueChange = { onValueChange(it) },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     cursorColor = Orange1,
                     textColor = Accent,
