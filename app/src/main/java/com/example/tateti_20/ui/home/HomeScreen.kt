@@ -24,11 +24,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
-import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DrawerValue
@@ -42,7 +40,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.rememberDrawerState
@@ -57,13 +54,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -84,11 +79,9 @@ import com.example.tateti_20.R
 
 
 @Composable
-fun HomeScreen(
-    homeViewModel: HomeViewModel = hiltViewModel(),
-    navigateToMach: (String, String) -> Unit,
-    navigateToHalls: (String) -> Unit
-) {
+fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (String, String) -> Unit, navigateToHalls: (String) -> Unit) {
+
+
     val coroutineScope = rememberCoroutineScope()
     val showModalDrawer = rememberDrawerState(initialValue = DrawerValue.Closed)
 
@@ -131,36 +124,27 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background), horizontalAlignment = Alignment.CenterHorizontally
+            .background(Background),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         when (uiState) {
-            HomeViewState.LOADING -> {
-                Loading(modifier = Modifier.weight(1f))
-            }
+            HomeViewState.LOADING -> { Loading(modifier = Modifier.weight(1f).background(Background)) }
             HomeViewState.LOGIN -> {
                 LogoHead()
+
                 Login(
+                    isLoading = loading,
                     modifier = Modifier.weight(1f),
-                    loading = loading,
-                    onClickLogin = { email, password ->
-                        homeViewModel.login(email, password)
-                    },
-                    onClickSingUp = { email, password, verifyPassword ->
-                        homeViewModel.singUp(email, password, verifyPassword)
-                    },
-                    onClickChangePassword = { email ->
-                        homeViewModel.setChangePassword(email)
-                    },
-                    onGoogleLoginSelected = {
-                        homeViewModel.onGoogleLoginSelected{
+                    onClickLogin = { email, password -> homeViewModel.login(email, password)},
+                    onClickSingUp = { email, password, verifyPassword -> homeViewModel.singUp(email, password, verifyPassword) },
+                    onClickChangePassword = { email -> homeViewModel.setChangePassword(email) },
+                    onGoogleLoginSelected = { homeViewModel.onGoogleLoginSelected{
                             googleLauncher.launch(it.signInIntent)
                         }
                     }
                 )
 
             }
-
             HomeViewState.HOME -> {
                 ModalDrawer(
                     drawerState = showModalDrawer,
@@ -208,7 +192,6 @@ fun HomeScreen(
                     }
 
                 }
-                LoadingDate(loading)
             }
         }
     }
@@ -224,6 +207,8 @@ fun HomeScreen(
         homeViewModel.clearNavigateToHall()
         navigateToMach(navigateToHall.hallId,navigateToHall.userId)
     }
+
+//    LoadingDate(Modifier.size(38.dp), loading)
 }
 
 @Composable
@@ -438,11 +423,8 @@ fun Logout(modifier: Modifier, onClickLogout: () -> Unit) {
 
 @Composable
 fun LogoHead(onClickLogo:() -> Unit = {}) {
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(36.dp)
-    )
+
+    Spacer(modifier = Modifier.height(36.dp))
 
     Box(
         modifier = Modifier
@@ -474,11 +456,10 @@ fun LogoHead(onClickLogo:() -> Unit = {}) {
 
 @Composable
 fun Loading(modifier: Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Background),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(38.dp),
@@ -500,87 +481,74 @@ fun Home(
     onClickUserName: () -> Unit,
     onJoinGame: (String) -> Unit
 ) {
-    Box(
-        modifier = modifier
+    Column(modifier = modifier.background(Background), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+
+        var createGame by remember { mutableStateOf(false) }
+
+        Divider(modifier = Modifier.fillMaxWidth())
+        ProfileData(user = user, resultUri, onClickUserName = onClickUserName)
+        Divider(modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier
             .fillMaxWidth()
-            .background(Background),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            modifier = Modifier.background(Background),
-            horizontalAlignment = Alignment.CenterHorizontally
+            .height(28.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Background),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            var createGame by remember { mutableStateOf(false) }
+            Victories(user)
+            Spacer(modifier = Modifier.width(130.dp))
+            Defeats(user)
+        }
 
-
-            Divider(modifier = Modifier.fillMaxWidth())
-            ProfileData(user = user, resultUri, onClickUserName = onClickUserName)
-            Divider(modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .height(28.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "Create Hall",
+                color = if (!createGame) Accent else HalfAccent
+            )
+            Switch(
+                checked = createGame,
+                onCheckedChange = { cambio -> createGame = cambio },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Orange2,
+                    uncheckedThumbColor = Orange2
+                )
+            )
+            Text(
+                text = "Join Game",
+                color = if (createGame) Accent else HalfAccent
+            )
+        }
+        Card(
+            modifier = Modifier
                 .fillMaxWidth()
-                .height(28.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Background),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                .padding(horizontal = 16.dp)
+                .border(2.dp, Orange1, RoundedCornerShape(24.dp))
+        ) {
+
+            Column(
+                modifier = Modifier.background(Background),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Victories(user)
-                Spacer(modifier = Modifier.width(130.dp))
-                Defeats(user)
-            }
+                AnimatedContent(targetState = createGame, label = "") {
+                    when (it) {
+                        true -> JoinGame(
+                            onJoinGame = onJoinGame, onClickHalls = onClickHalls
+                        )
 
-            Spacer(modifier = Modifier
-                .fillMaxWidth()
-                .height(28.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Create Hall",
-                    color = if (!createGame) Accent else HalfAccent
-                )
-                Switch(
-                    checked = createGame,
-                    onCheckedChange = { cambio -> createGame = cambio },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Orange2,
-                        uncheckedThumbColor = Orange2
-                    )
-                )
-                Text(
-                    text = "Join Game",
-                    color = if (createGame) Accent else HalfAccent
-                )
-            }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .border(2.dp, Orange1, RoundedCornerShape(24.dp))
-            ) {
-
-                Column(
-                    modifier = Modifier.background(Background),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AnimatedContent(targetState = createGame, label = "") {
-                        when (it) {
-                            true -> JoinGame(
-                                onJoinGame = onJoinGame, onClickHalls = onClickHalls
-                            )
-
-                            false -> CreateGame(onCreateGame)
-                        }
+                        false -> CreateGame(onCreateGame)
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(18.dp))
 
-
-            
+            Spacer(modifier = Modifier.height(24.dp))
         }
+        Spacer(modifier = Modifier.height(18.dp))
     }
 }
 
@@ -781,244 +749,6 @@ fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
     }
 }
 
-
-
-
-/*
-* ------------------ Authetication -----------------
-* */
-@Composable
-fun Login(modifier: Modifier, loading: Boolean,
-          onClickLogin: (String, String) -> Unit,
-          onClickSingUp: (String, String, String) -> Unit,
-          onClickChangePassword: (String) -> Unit,
-          onGoogleLoginSelected: () -> Unit
-) {
-    var createUser by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var verifyPassword by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = modifier
-            .background(Background),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(Background)
-        ) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                label = { Text(text = "email", color = Orange2) },
-                value = email,
-                onValueChange = { email = it },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    cursorColor = Orange1,
-                    textColor = Accent,
-                    focusedBorderColor = Orange1,
-                    unfocusedBorderColor = Orange1
-                ),
-                maxLines = 1,
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-            AnimatedContent(targetState = createUser, label = "") {
-                if(it){
-                    Column {
-
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp),
-                            label = { Text(text = "password", color = Orange2) },
-                            value = password,
-                            onValueChange = {pass -> password = pass },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                cursorColor = Orange1,
-                                textColor = Accent,
-                                focusedBorderColor = Orange1,
-                                unfocusedBorderColor = Orange1
-                            ),
-                            maxLines = 1,
-                            singleLine = true,
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            },
-                            visualTransformation =  PasswordVisualTransformation(), //if (isPasswordVisible) VisualTransformation.None else
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                        )
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp),
-                            label = { Text(text = "confirm password", color = Orange2) },
-                            value = verifyPassword,
-                            onValueChange = {pass -> verifyPassword = pass },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                cursorColor = Orange1,
-                                textColor = Accent,
-                                focusedBorderColor = Orange1,
-                                unfocusedBorderColor = Orange1
-                            ),
-                            maxLines = 1,
-                            singleLine = true,
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            },
-                            visualTransformation = PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                        )
-                    }
-                } else {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        label = { Text(text = "password", color = Orange2) },
-                        value = password,
-                        onValueChange = {pass -> password = pass },
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            cursorColor = Orange1,
-                            textColor = Accent,
-                            focusedBorderColor = Orange1,
-                            unfocusedBorderColor = Orange1
-                        ),
-                        maxLines = 1,
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            val icon = if (isPasswordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
-                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                                Icon(
-                                    painter = painterResource(id = icon),
-                                    contentDescription = null,
-//                            tint = Orange1
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                    )
-                }
-            }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-                ) {
-                Text(
-                    text = "Create Account",
-                    color = Accent,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .clickable { createUser = !createUser }
-                )
-                Checkbox(checked = createUser, onCheckedChange = { createUser = it })
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "Forgot Password?",
-                    color = Accent,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .clickable { onClickChangePassword(email) }
-                )
-
-            }
-            Spacer(modifier = Modifier.height(22.dp))
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Orange1,
-                    contentColor = Accent
-                ),
-                onClick = {
-                    if (createUser) onClickSingUp(email, password, verifyPassword)
-                    else onClickLogin(email, password)
-                },
-                enabled = (email.isNotEmpty() && password.isNotEmpty() && (verifyPassword.isNotEmpty() || !createUser))
-            ) {
-                if (createUser) Text(text = "Create User")
-                else Text(text = "Login")
-            }
-            Card(
-                Modifier
-                    .clickable { onGoogleLoginSelected() }
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 12.dp), elevation = 12.dp){
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(34.dp)
-                        .background(Orange1),
-                    horizontalArrangement = Arrangement.Center
-                ){
-                    Icon(modifier = Modifier
-                        .size(26.dp)
-                        .padding(end = 8.dp),
-                        painter = painterResource(id = R.drawable.ic_google),
-                        tint = Color.Black,
-                        contentDescription = "ic_google")
-                    Text(text = "Login with Google", color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Light)
-                }
-            }
-
-        }
-        LoadingDate(loading)
-
-    }
-}
-
-@Composable
-fun LoadingDate(loading:Boolean = false) {
-    if(loading){
-        CircularProgressIndicator(
-            modifier = Modifier.size(38.dp),
-            color = Orange2,
-            backgroundColor = Orange1,
-            strokeWidth = 2.dp
-        )
-    }
-}
-/*
-* ---------------------------------------------------
-* */
-
-
-/*
-*
-* */
 
 /*private fun generateFile(): File {
     val name = "PhotoCompose_" + SimpleDateFormat("yyyyMMdd_hhmmss").format(Date())

@@ -18,3 +18,7 @@ val Accent = Color(0xFFFFFFFF)
 val HalfAccent = Color(0x4DFFFFFF)
 val BlueLink = Color(0xFF00B3FF)
 val Trasparent = Color(0x00FFFFFF)
+
+
+val OrangeShimmerBase = Color(0xFF364353)
+val OrangeShimmerTrasition = Color(0xFFFDC33F)
