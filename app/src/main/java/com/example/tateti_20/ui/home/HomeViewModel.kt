@@ -467,6 +467,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun openAnnotator(navigateToAnnotator: () -> Unit) {
+        navigateToAnnotator()
+    }
+
     /*
         *---------------------------------------
         */

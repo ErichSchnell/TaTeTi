@@ -1,5 +1,6 @@
 package com.example.tateti_20.ui.core
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -26,6 +27,10 @@ fun ContentWrapper(navigatonController: NavHostController) {
                 },
                 navigateToHalls = {userId ->
                     navigatonController.navigate(Halls.createRoute(userId))
+                },
+                navigateToAnnotator = {
+                    Log.i("erich", "Entre al navigationToAnnotator: ")
+//                    navigatonController.navigate(Annotator.createRoute(userId))
                 }
             )
         }
