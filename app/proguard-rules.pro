@@ -21,26 +21,26 @@
 #-renamesourcefileattribute SourceFile
 
 # Keep the User data class
--keep class com.example.tateti_20.data.network.model.GameModelData { *; }
+-keep class com.example.tateti_20.data.network.model.* { *; }
 
-# Keep the default constructor for classes involved in deserialization
--keepclassmembers class com.example.tateti_20.data.network.model.GameModelData {
-    <init>();
-}
-# Keep the User data class
--keep class com.example.tateti_20.data.network.model.PlayerModelData { *; }
-
-# Keep the default constructor for classes involved in deserialization
--keepclassmembers class com.example.tateti_20.data.network.model.PlayerModelData {
-    <init>();
-}
-# Keep the User data class
--keep class com.example.tateti_20.data.network.model.UserModelData { *; }
-
-# Keep the default constructor for classes involved in deserialization
--keepclassmembers class com.example.tateti_20.data.network.model.UserModelData {
-    <init>();
-}
+## Keep the default constructor for classes involved in deserialization
+#-keepclassmembers class com.example.tateti_20.data.network.model.GameModelData {
+#    <init>();
+#}
+## Keep the User data class
+#-keep class com.example.tateti_20.data.network.model.PlayerModelData { *; }
+#
+## Keep the default constructor for classes involved in deserialization
+#-keepclassmembers class com.example.tateti_20.data.network.model.PlayerModelData {
+#    <init>();
+#}
+## Keep the User data class
+#-keep class com.example.tateti_20.data.network.model.UserModelData { *; }
+#
+## Keep the default constructor for classes involved in deserialization
+#-keepclassmembers class com.example.tateti_20.data.network.model.UserModelData {
+#    <init>();
+#}
 
 # Keep the names of classes/members we are using for Firebase serialization/deserialization
 -keepnames class com.google.firebase.** {*;}

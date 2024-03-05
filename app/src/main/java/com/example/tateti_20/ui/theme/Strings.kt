@@ -30,7 +30,7 @@ const val string_email_used = "Email is already in use"
 const val string_pass_same = "passwords aren\'t same"
 const val string_email_sent = "Email Sent"
 const val string_insert_email = "Insert Email"
-const val string_exception_no_registrada = "Without Reason"
+const val string_exception_no_registrada = "Try it again"
 
 /*
 * ------------------------------------

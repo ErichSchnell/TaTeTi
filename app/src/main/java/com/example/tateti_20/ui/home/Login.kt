@@ -90,7 +90,7 @@ fun Login(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
             ) {
-                CreateAcount{ createUser = it}
+                CreateAcount(value = createUser, onValueChange = { createUser = it})
                 Spacer(modifier = modifier.weight(1f))
                 ForgotPassword{ onClickChangePassword(email) }
             }
@@ -215,7 +215,7 @@ fun VerifyPassword(
 
 
 @Composable
-fun CreateAcount(content: (Boolean) -> Unit) {
+fun CreateAcount(value: Boolean, onValueChange: (Boolean) -> Unit) {
     var createUser by remember { mutableStateOf(false) }
     Row( verticalAlignment = Alignment.CenterVertically ) {
         Text(
@@ -223,9 +223,8 @@ fun CreateAcount(content: (Boolean) -> Unit) {
             color = Accent,
             fontSize = 12.sp
         )
-        Checkbox(checked = createUser, onCheckedChange = {
-            createUser = !createUser
-            content(createUser)
+        Checkbox(checked = value, onCheckedChange = {
+            onValueChange(!value)
         })
     }
 }

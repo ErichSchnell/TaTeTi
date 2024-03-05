@@ -89,6 +89,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             if (authService.isUserLogged()) {
                 try {
+
                     val userId = withContext(Dispatchers.IO) { async { getLocalUserId() }.await() }
                     Log.d(TAG, "userId: $userId")
 
@@ -99,9 +100,14 @@ class HomeViewModel @Inject constructor(
                     } else logout()
 
 
-                } catch (e:Exception){ Log.e(TAG, "getLocalUserId(): ${e.message}") }
 
-            } else { _uiState.value = HomeViewState.LOGIN }
+                } catch (e:Exception){
+                    Log.e(TAG, "getLocalUserId(): ${e.message}")
+                }
+
+            } else {
+                _uiState.value = HomeViewState.LOGIN
+            }
         }
     }
     /*
@@ -116,6 +122,7 @@ class HomeViewModel @Inject constructor(
         val newGame = getNewGame(hallName = hallName, password = password)
 
         viewModelScope.launch {
+            _loading.value = true
             try {
                 val hallId = withContext(Dispatchers.IO) {
                     async { createNewGame(newGame.toModelData()) }.await()
@@ -128,6 +135,7 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.i(TAG, "exploto todo: ${e.message}")
             }
+            _loading.value = false
         }
     }
 
@@ -157,7 +165,9 @@ class HomeViewModel @Inject constructor(
         */
 
     fun viewHalls(navigateToHalls: (String) -> Unit) {
+        _loading.value = true
         navigateToHalls(_user.value.userId)
+        _loading.value = false
     }
 
 
@@ -319,7 +329,9 @@ class HomeViewModel @Inject constructor(
     private fun loadUser(serverUserId: String, createUser: () -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val userAux = withContext(Dispatchers.IO) { getUser(serverUserId)  }
+                val userAux = withContext(Dispatchers.IO) {
+                    getUser(serverUserId)
+                }
                 printFireUser(userAux)
 
                 if (userAux.userEmail.isNotEmpty()) {
@@ -414,6 +426,7 @@ class HomeViewModel @Inject constructor(
     * */
     private fun loadProfilePhoto() {
         viewModelScope.launch {
+            _loading.value = true
             try {
                 val localProfilePhotoState = withContext(Dispatchers.IO) { async { getLocalProfilePhotoState() }.await() }
                     Log.d(TAG, "localProfilePhoto: $localProfilePhotoState")
@@ -433,6 +446,7 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "getLocalProfilePhoto(): ${e.message}")
             }
+            _loading.value = false
         }
     }
 

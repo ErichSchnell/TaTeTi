@@ -54,8 +54,6 @@ class DataStoreService @Inject constructor(private val context: Context) : Datab
             preferences[PROFILE_PHOTO_ID] = uriImage.toString()
         }
     }
-
-
     override fun getProfilePhoto(): Flow<Uri> {
         return context.profilePhotoPreferenceDataStore.data.map { preferences ->
             Uri.parse(preferences[PROFILE_PHOTO_ID] ?: "")

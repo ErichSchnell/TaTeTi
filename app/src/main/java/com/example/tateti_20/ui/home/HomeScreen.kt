@@ -76,6 +76,8 @@ import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
 import com.example.tateti_20.R
+import com.example.tateti_20.ui.core.ShimmerHome
+import com.example.tateti_20.ui.core.ShimmerModalDrawer
 
 
 @Composable
@@ -128,7 +130,9 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (uiState) {
-            HomeViewState.LOADING -> { Loading(modifier = Modifier.weight(1f).background(Background)) }
+            HomeViewState.LOADING -> { Loading(modifier = Modifier
+                .weight(1f)
+                .background(Background)) }
             HomeViewState.LOGIN -> {
                 LogoHead()
 
@@ -159,9 +163,6 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (
                                 coroutineScope.launch { showModalDrawer.close() }
                                 homeViewModel.logout()
                             },
-//                            onClickIntentCameraLauncher = {
-//
-//                            },
                             onClickIntentGalleryLauncher = {
                                 intenGalleryLauncher.launch("image/*")
                             }
@@ -180,6 +181,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (
                         }
                         Home(
                             modifier = Modifier.weight(1f),
+                            isLoading = loading,
                             user = user,
                             resultUri = resultUri,
                             onClickHalls = { homeViewModel.viewHalls(navigateToHalls) },
@@ -218,7 +220,6 @@ fun ModalDrawerProfile(
     uriImage: Uri?,
     editUserName: (String) -> Unit,
     onClickLogout: () -> Unit,
-//    onClickIntentCameraLauncher:()->Unit,
     onClickIntentGalleryLauncher:()->Unit,
 ){
     Column(modifier = Modifier
@@ -226,33 +227,33 @@ fun ModalDrawerProfile(
         .padding(24.dp)
         .background(Background)
     ) {
-        ModalProfilePhoto(
-            Modifier.align(Alignment.CenterHorizontally),
+        ShimmerModalDrawer(
             isLoading,
-            uriImage,
-//            onClickIntentCameraLauncher = onClickIntentCameraLauncher,
-            onClickIntentGalleryLauncher = onClickIntentGalleryLauncher,
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ){
+            ModalProfilePhoto(
+                Modifier.align(Alignment.CenterHorizontally),
+                uriImage,
+                onClickIntentGalleryLauncher = onClickIntentGalleryLauncher,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        EditProfile(user, editUserName = editUserName)
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f))
+            EditProfile(user, editUserName = editUserName)
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f))
 
-        Logout(Modifier.align(Alignment.CenterHorizontally)) { onClickLogout() }
+            Logout(Modifier.align(Alignment.CenterHorizontally)) { onClickLogout() }
+        }
     }
 }
 
 @Composable
 fun ModalProfilePhoto(
     modifier: Modifier,
-    isLoading: Boolean,
     uriImage: Uri?,
-//    onClickIntentCameraLauncher:()->Unit,
     onClickIntentGalleryLauncher:()->Unit,
-
-    ) {
+) {
     var showProfilePhoto by remember{ mutableStateOf(false) }
 
     Box(
@@ -263,26 +264,22 @@ fun ModalProfilePhoto(
             .clickable { showProfilePhoto = true },
         contentAlignment = Alignment.Center
     ){
-        if (isLoading) {
-            Loading(modifier)
+        if (uriImage != null) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape),
+                model = uriImage,
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth
+            )
         } else {
-            if (uriImage != null) {
-                AsyncImage(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(CircleShape),
-                    model = uriImage,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth
-                )
-            } else {
-                Image(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(CircleShape),
-                    imageVector = Icons.Default.AccountCircle, contentDescription = null
-                )
-            }
+            Image(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape),
+                imageVector = Icons.Default.AccountCircle, contentDescription = null
+            )
         }
     }
 
@@ -474,6 +471,7 @@ fun Loading(modifier: Modifier) {
 @Composable
 fun Home(
     modifier: Modifier,
+    isLoading: Boolean,
     user: UserModelUi,
     resultUri: Uri?,
     onCreateGame: (String, String) -> Unit,
@@ -485,70 +483,73 @@ fun Home(
 
         var createGame by remember { mutableStateOf(false) }
 
-        Divider(modifier = Modifier.fillMaxWidth())
-        ProfileData(user = user, resultUri, onClickUserName = onClickUserName)
-        Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .height(28.dp))
-        Row(
-            modifier = Modifier
+        ShimmerHome(isLoading = isLoading) {
+            Divider(modifier = Modifier.fillMaxWidth())
+            ProfileData(user = user, resultUri, onClickUserName = onClickUserName)
+            Divider(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier
                 .fillMaxWidth()
-                .background(Background),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Victories(user)
-            Spacer(modifier = Modifier.width(130.dp))
-            Defeats(user)
-        }
-
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .height(28.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "Create Hall",
-                color = if (!createGame) Accent else HalfAccent
-            )
-            Switch(
-                checked = createGame,
-                onCheckedChange = { cambio -> createGame = cambio },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Orange2,
-                    uncheckedThumbColor = Orange2
-                )
-            )
-            Text(
-                text = "Join Game",
-                color = if (createGame) Accent else HalfAccent
-            )
-        }
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .border(2.dp, Orange1, RoundedCornerShape(24.dp))
-        ) {
-
-            Column(
-                modifier = Modifier.background(Background),
-                horizontalAlignment = Alignment.CenterHorizontally
+                .height(28.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Background),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                AnimatedContent(targetState = createGame, label = "") {
-                    when (it) {
-                        true -> JoinGame(
-                            onJoinGame = onJoinGame, onClickHalls = onClickHalls
-                        )
-
-                        false -> CreateGame(onCreateGame)
-                    }
-                }
+                Victories(user)
+                Spacer(modifier = Modifier.width(130.dp))
+                Defeats(user)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(28.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Create Hall",
+                    color = if (!createGame) Accent else HalfAccent
+                )
+                Switch(
+                    checked = createGame,
+                    onCheckedChange = { cambio -> createGame = cambio },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Orange2,
+                        uncheckedThumbColor = Orange2
+                    )
+                )
+                Text(
+                    text = "Join Game",
+                    color = if (createGame) Accent else HalfAccent
+                )
+            }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .border(2.dp, Orange1, RoundedCornerShape(24.dp))
+            ) {
+
+                Column(
+                    modifier = Modifier.background(Background),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AnimatedContent(targetState = createGame, label = "") {
+                        when (it) {
+                            true -> JoinGame(
+                                onJoinGame = onJoinGame, onClickHalls = onClickHalls
+                            )
+
+                            false -> CreateGame(onCreateGame)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+            Spacer(modifier = Modifier.height(18.dp))
         }
-        Spacer(modifier = Modifier.height(18.dp))
+
     }
 }
 
@@ -685,7 +686,6 @@ fun CreateGame(onCreateGame: (String, String) -> Unit) {
 
     }
 }
-
 
 @Composable
 fun JoinGame(onJoinGame: (String) -> Unit, onClickHalls: () -> Unit) {
