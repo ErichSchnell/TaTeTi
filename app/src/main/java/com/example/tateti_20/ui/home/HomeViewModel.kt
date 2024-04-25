@@ -296,11 +296,12 @@ class HomeViewModel @Inject constructor(
                 val result = withContext(Dispatchers.IO) {
                     async { authService.loginWithGoogle(idToken) }.await()
                 }
-
+                Log.i(TAG, "loginWithGoogle result: ${result}")
                 result?.let {
                     loadUser(it.uid) {
                         createUser(it.uid, it.email.orEmpty(), it.displayName.orEmpty(), it.photoUrl)
                     }
+                    _uiState.value = HomeViewState.HOME
                     saveLocalUserId(it.uid)
                 }
 
@@ -337,8 +338,9 @@ class HomeViewModel @Inject constructor(
                 if (userAux.userEmail.isNotEmpty()) {
                     _user.value = userAux
                     if (_user.value.profilePhoto) loadProfilePhoto()
-
-                } else { createUser() }
+                } else {
+                    createUser()
+                }
 
             } catch (e: Exception) {
                 Log.e(TAG, "getUser(serverUserId): ${e.message}")
@@ -467,8 +469,8 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun openAnnotator(navigateToAnnotator: () -> Unit) {
-        navigateToAnnotator()
+    fun openAnnotator(navigateToAnnotator: (String) -> Unit) {
+        navigateToAnnotator(_user.value.userId)
     }
 
     /*

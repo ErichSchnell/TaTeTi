@@ -81,7 +81,7 @@ import com.example.tateti_20.ui.core.ShimmerModalDrawer
 
 
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (String, String) -> Unit, navigateToHalls: (String) -> Unit, navigateToAnnotator: () -> Unit) {
+fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (String, String) -> Unit, navigateToHalls: (String) -> Unit, navigateToAnnotator: (String) -> Unit) {
 
 
     val coroutineScope = rememberCoroutineScope()
@@ -242,7 +242,9 @@ fun ModalDrawerProfile(
 
             EditProfile(user, editUserName = editUserName)
 
-            Text(text = "Annotator", modifier = Modifier.clickable { onClickAnnotator() })
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ItemModal( text = "Annotator", onClick = {onClickAnnotator()})
 
             Spacer(modifier = Modifier
                 .fillMaxWidth()
@@ -251,6 +253,18 @@ fun ModalDrawerProfile(
             Logout(Modifier.align(Alignment.CenterHorizontally)) { onClickLogout() }
         }
     }
+}
+
+@Composable
+fun ItemModal(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit = {}
+){
+    Text(
+        modifier = modifier.clickable { onClick() },
+        text = text
+    )
 }
 
 @Composable

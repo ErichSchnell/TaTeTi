@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.tateti_20.ui.annotator.AnnotatorScreen
 import com.example.tateti_20.ui.core.Routes.*
 import com.example.tateti_20.ui.game.GameScreen
 import com.example.tateti_20.ui.halls.HallsScreen
@@ -28,9 +29,8 @@ fun ContentWrapper(navigatonController: NavHostController) {
                 navigateToHalls = {userId ->
                     navigatonController.navigate(Halls.createRoute(userId))
                 },
-                navigateToAnnotator = {
-                    Log.i("erich", "Entre al navigationToAnnotator: ")
-//                    navigatonController.navigate(Annotator.createRoute(userId))
+                navigateToAnnotator = {userId ->
+                    navigatonController.navigate(Annotator.createRoute(userId))
                 }
             )
         }
@@ -63,6 +63,14 @@ fun ContentWrapper(navigatonController: NavHostController) {
                 userId = it.arguments?.getString("userId").orEmpty()
             )
         }
+        composable(
+            Annotator.route,
+            arguments = listOf(
+                navArgument("userId") { type = NavType.StringType }
+            )
+        ) {
+            AnnotatorScreen(userId = it.arguments?.getString("userId").orEmpty())
+        }
     }
 
 
@@ -83,6 +91,11 @@ sealed class Routes(val route:String){
     object Halls:Routes("halls/{userId}"){
         fun createRoute(userId: String): String{
             return "halls/${userId}"
+        }
+    }
+    object Annotator:Routes("annotator/{userId}"){
+        fun createRoute(userId: String): String{
+            return "annotator/${userId}"
         }
     }
 
