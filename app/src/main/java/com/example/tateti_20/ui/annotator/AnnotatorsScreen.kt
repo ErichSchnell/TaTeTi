@@ -1,9 +1,14 @@
 package com.example.tateti_20.ui.annotator
 
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
@@ -26,16 +31,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.tateti_20.ui.model.AnnotatorCardModelUi
 import com.example.tateti_20.ui.theme.Accent
+import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
 
 
+
+private val TAG = "erich"
 /*
 * homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (String, String) -> Unit, navigateToHalls: (String) -> Unit, navigateToAnnotator: () -> Unit
 * */
 @Composable
-fun AnnotatorScreen(
+fun AnnotatorsScreen(
     annotatorViewModel: AnnotatorViewModel = hiltViewModel(),
     userEmail: String
 ){
@@ -47,7 +54,12 @@ fun AnnotatorScreen(
         annotatorViewModel.getAnnotatorGames(userEmail)
     }
 
-    Box (modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+    Box (
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Background),
+        contentAlignment = Alignment.Center
+    ){
         when(uiState){
             AnnotatorsViewState.LOADING -> Loading(Modifier.align(Alignment.Center))
             AnnotatorsViewState.ANNOTATORS -> {
@@ -57,38 +69,26 @@ fun AnnotatorScreen(
 
         StartAnnotator(Modifier.align(Alignment.BottomEnd)){showDialog = true}
 
-        if (showDialog){
-            Dialog(onDismissRequest = { showDialog = false }) {
-                Column {
-                    Annotator(annotatorCardModelUi =  AnnotatorCardModelUi("Generala"))
-                    Annotator(annotatorCardModelUi =  AnnotatorCardModelUi("Generico"))
-                    Annotator(annotatorCardModelUi =  AnnotatorCardModelUi("truco"))
-                }
-            }
+        if (showDialog) {
+            DialogSelectAnnotator(
+                onDismissRequest = { showDialog = false },
+                onClickAnnotatorGenerico = { Log.i(TAG, "generico")},
+                onClickAnnotatorTruco = {Log.i(TAG, "truco")},
+                onClickAnnotatorGenerala = {Log.i(TAG, "generala")}
+            )
         }
     }
-
-
-
-
-
-
-
-
-
-
 }
+
+
 @Composable
 fun Loading(modifier: Modifier = Modifier) {
-//    Box(modifier = modifier, contentAlignment = Alignment.Center){
-        CircularProgressIndicator(modifier = modifier)
-//    }
+    CircularProgressIndicator(modifier = modifier)
 }
 
 @Composable
 fun StartAnnotator(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    var showDialog by remember{mutableStateOf(false)}
-    FloatingActionButton(modifier = modifier, onClick = { onClick() }) {
+    FloatingActionButton(modifier = modifier.padding(24.dp), onClick = { onClick() }) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = null,
@@ -97,60 +97,45 @@ fun StartAnnotator(modifier: Modifier = Modifier, onClick: () -> Unit) {
     }
 
 }
-
-
-/*
-when(uiState){
-        AnnotatorsViewState.GENERALA -> Text(text = "estoy en Generala")
-        AnnotatorsViewState.GENERICO -> Text(text = "estoy en Generico")
-        AnnotatorsViewState.TRUCO -> Text(text = "estoy en Truco")
-        AnnotatorsViewState.VACIO -> {
-
-            Box (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Background),
-                contentAlignment = Alignment.Center
-            ){
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(1),
-                    content = {
-                        items(listAnnotator) { annotator ->
-                            Annotator(modifier = Modifier.height(100.dp), annotatorCardModelUi = annotator){
-                                annotatorViewModel.setUiState(annotator.typeAnnotator)
-                            }
-                        }
-                    },
-                    contentPadding = PaddingValues(16.dp)
-                )
-            }
-
+@Composable
+fun DialogSelectAnnotator(
+    onDismissRequest: () -> Unit,
+    onClickAnnotatorGenerico: () -> Unit,
+    onClickAnnotatorTruco: () -> Unit,
+    onClickAnnotatorGenerala: () -> Unit
+){
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Column (
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Annotator(text = "GENERICO")  {onClickAnnotatorGenerico()}
+            Annotator(text = "TRUCO") {onClickAnnotatorTruco()}
+            Annotator(text = "GENERALA") {onClickAnnotatorGenerala()}
         }
     }
-
-    if (uiState != AnnotatorsViewState.VACIO){
-        BackHandler {
-            annotatorViewModel.setUiState(AnnotatorsViewState.VACIO)
-        }
-    }
- */
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Annotator(
     modifier: Modifier = Modifier,
-    annotatorCardModelUi: AnnotatorCardModelUi = AnnotatorCardModelUi("empty"),
+    text: String = "",
     onClick:()-> Unit = {}
 ){
     Card (
-        modifier = modifier.padding(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .padding(8.dp)
+            .clickable { onClick() },
         backgroundColor = Orange1,
         contentColor = Accent,
         elevation = 12.dp,
         onClick = {onClick()}
     ) {
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = annotatorCardModelUi.text)
+        Column (Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Text(text = text)
         }
     }
 }

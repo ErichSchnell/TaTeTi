@@ -1,13 +1,12 @@
 package com.example.tateti_20.ui.core
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.tateti_20.ui.annotator.AnnotatorScreen
+import com.example.tateti_20.ui.annotator.AnnotatorsScreen
 import com.example.tateti_20.ui.core.Routes.*
 import com.example.tateti_20.ui.game.GameScreen
 import com.example.tateti_20.ui.halls.HallsScreen
@@ -69,7 +68,7 @@ fun ContentWrapper(navigatonController: NavHostController) {
                 navArgument("userEmail") { type = NavType.StringType }
             )
         ) {
-            AnnotatorScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
+            AnnotatorsScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
         }
     }
 
