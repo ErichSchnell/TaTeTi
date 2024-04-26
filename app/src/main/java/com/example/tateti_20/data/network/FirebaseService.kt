@@ -1,10 +1,12 @@
 package com.example.tateti_20.data.network
 
 import android.util.Log
+import com.example.tateti_20.data.network.model.AnnotatorHeadModelData
 import com.example.tateti_20.data.network.model.GameModelData
 import com.example.tateti_20.data.network.model.PlayerModelData
 import com.example.tateti_20.data.network.model.UserModelData
 import com.example.tateti_20.domain.DataServerService
+import com.example.tateti_20.ui.model.AnnotatorHeadModelUi
 import com.example.tateti_20.ui.model.GameModelUi
 import com.example.tateti_20.ui.model.UserModelUi
 import com.example.tateti_20.ui.theme.string_log
@@ -29,6 +31,7 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
     companion object {
         private const val PATH_HALL = "halls"
         private const val PATH_USER = "users"
+        private const val PATH_ANNOTATOR_HEAD = "annotatorHead"
     }
 
 
@@ -122,8 +125,8 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
         awaitClose { registration.remove() }
     }
     /*
-                * --------------------------------------
-                * */
+    * --------------------------------------
+    * */
 
 
     /*
@@ -153,7 +156,38 @@ class FirebaseService @Inject constructor(private val firestore: FirebaseFiresto
         awaitClose { registration.remove() }
     }
     /*
-                * --------------------------------------
-                * */
+    * --------------------------------------
+    * */
+
+
+    /*
+    ------------------ ANNOTATOR GAMES ------------------
+    */
+    override fun getAnnotatorGames(userEmail:String): Flow<List<AnnotatorHeadModelUi>> = callbackFlow {
+        // Define el listener para los cambios en el documento
+
+        val listener = EventListener<QuerySnapshot> { collection, exception ->
+            if (exception != null)  close(exception)
+            else if (collection != null) {
+
+                val annotatorHeads:MutableList<AnnotatorHeadModelUi> = mutableListOf()
+                collection.documents.forEach { snapshot ->
+                    annotatorHeads.add(snapshot.toObject<AnnotatorHeadModelData>()?.toModelUi() ?: AnnotatorHeadModelData().toModelUi())
+                }
+
+                val currentGameData:List<AnnotatorHeadModelUi> = annotatorHeads
+                trySend(currentGameData)
+            }
+        }
+
+        // Agrega el listener al documento
+        val registration = firestore.collection("$PATH_ANNOTATOR_HEAD/$userEmail").addSnapshotListener(listener)
+
+        // Cierre el listener cuando se cancela el flujo
+        awaitClose { registration.remove() }
+    }
+    /*
+    * --------------------------------------
+    * */
 
 }

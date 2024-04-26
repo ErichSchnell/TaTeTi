@@ -29,8 +29,8 @@ fun ContentWrapper(navigatonController: NavHostController) {
                 navigateToHalls = {userId ->
                     navigatonController.navigate(Halls.createRoute(userId))
                 },
-                navigateToAnnotator = {userId ->
-                    navigatonController.navigate(Annotator.createRoute(userId))
+                navigateToAnnotator = {userEmail ->
+                    navigatonController.navigate(Annotator.createRoute(userEmail))
                 }
             )
         }
@@ -66,10 +66,10 @@ fun ContentWrapper(navigatonController: NavHostController) {
         composable(
             Annotator.route,
             arguments = listOf(
-                navArgument("userId") { type = NavType.StringType }
+                navArgument("userEmail") { type = NavType.StringType }
             )
         ) {
-            AnnotatorScreen(userId = it.arguments?.getString("userId").orEmpty())
+            AnnotatorScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
         }
     }
 
@@ -93,9 +93,9 @@ sealed class Routes(val route:String){
             return "halls/${userId}"
         }
     }
-    object Annotator:Routes("annotator/{userId}"){
-        fun createRoute(userId: String): String{
-            return "annotator/${userId}"
+    object Annotator:Routes("annotator/{userEmail}"){
+        fun createRoute(userEmail: String): String{
+            return "annotator/${userEmail}"
         }
     }
 

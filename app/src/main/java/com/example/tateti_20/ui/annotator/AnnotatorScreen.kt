@@ -1,30 +1,33 @@
 package com.example.tateti_20.ui.annotator
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.ui.model.AnnotatorCardModelUi
 import com.example.tateti_20.ui.theme.Accent
-import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
 
 
@@ -34,22 +37,74 @@ import com.example.tateti_20.ui.theme.Orange1
 @Composable
 fun AnnotatorScreen(
     annotatorViewModel: AnnotatorViewModel = hiltViewModel(),
-    userId: String
+    userEmail: String
 ){
-
+    var showDialog by remember{mutableStateOf(false)}
     val uiState by annotatorViewModel.uiState.collectAsState()
 
-    val listAnnotator = listOf(
-        AnnotatorCardModelUi("Generico", SelectAnnotatorViewState.GENERICO),
-        AnnotatorCardModelUi("Truco" , SelectAnnotatorViewState.TRUCO),
-        AnnotatorCardModelUi("Generala" , SelectAnnotatorViewState.GENERALA),
-    )
 
-    when(uiState){
-        SelectAnnotatorViewState.GENERALA -> Text(text = "estoy en Generala")
-        SelectAnnotatorViewState.GENERICO -> Text(text = "estoy en Generico")
-        SelectAnnotatorViewState.TRUCO -> Text(text = "estoy en Truco")
-        SelectAnnotatorViewState.VACIO -> {
+    LaunchedEffect(true){
+        annotatorViewModel.getAnnotatorGames(userEmail)
+    }
+
+    Box (modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+        when(uiState){
+            AnnotatorsViewState.LOADING -> Loading(Modifier.align(Alignment.Center))
+            AnnotatorsViewState.ANNOTATORS -> {
+
+            }
+        }
+
+        StartAnnotator(Modifier.align(Alignment.BottomEnd)){showDialog = true}
+
+        if (showDialog){
+            Dialog(onDismissRequest = { showDialog = false }) {
+                Column {
+                    Annotator(annotatorCardModelUi =  AnnotatorCardModelUi("Generala"))
+                    Annotator(annotatorCardModelUi =  AnnotatorCardModelUi("Generico"))
+                    Annotator(annotatorCardModelUi =  AnnotatorCardModelUi("truco"))
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+}
+@Composable
+fun Loading(modifier: Modifier = Modifier) {
+//    Box(modifier = modifier, contentAlignment = Alignment.Center){
+        CircularProgressIndicator(modifier = modifier)
+//    }
+}
+
+@Composable
+fun StartAnnotator(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    var showDialog by remember{mutableStateOf(false)}
+    FloatingActionButton(modifier = modifier, onClick = { onClick() }) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+
+}
+
+
+/*
+when(uiState){
+        AnnotatorsViewState.GENERALA -> Text(text = "estoy en Generala")
+        AnnotatorsViewState.GENERICO -> Text(text = "estoy en Generico")
+        AnnotatorsViewState.TRUCO -> Text(text = "estoy en Truco")
+        AnnotatorsViewState.VACIO -> {
 
             Box (
                 modifier = Modifier
@@ -73,13 +128,12 @@ fun AnnotatorScreen(
         }
     }
 
-    if (uiState != SelectAnnotatorViewState.VACIO){
+    if (uiState != AnnotatorsViewState.VACIO){
         BackHandler {
-            annotatorViewModel.setUiState(SelectAnnotatorViewState.VACIO)
+            annotatorViewModel.setUiState(AnnotatorsViewState.VACIO)
         }
     }
-
-}
+ */
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
