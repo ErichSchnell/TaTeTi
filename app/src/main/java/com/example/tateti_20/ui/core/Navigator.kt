@@ -9,8 +9,11 @@ import androidx.navigation.navArgument
 import com.example.tateti_20.ui.annotator.AnnotatorsScreen
 import com.example.tateti_20.ui.core.Routes.*
 import com.example.tateti_20.ui.game.GameScreen
+import com.example.tateti_20.ui.generala.GeneralaScreen
+import com.example.tateti_20.ui.generico.GenericoScreen
 import com.example.tateti_20.ui.halls.HallsScreen
 import com.example.tateti_20.ui.home.HomeScreen
+import com.example.tateti_20.ui.truco.TrucoScreen
 
 @Composable
 fun ContentWrapper(navigatonController: NavHostController) {
@@ -68,7 +71,21 @@ fun ContentWrapper(navigatonController: NavHostController) {
                 navArgument("userEmail") { type = NavType.StringType }
             )
         ) {
-            AnnotatorsScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
+            AnnotatorsScreen(
+                userEmail = it.arguments?.getString("userEmail").orEmpty(),
+                navigateToGenerala = { navigatonController.navigate(Generala.route) },
+                navigateToGenerico = { navigatonController.navigate(Generico.route) },
+                navigateToTruco = { navigatonController.navigate(Truco.route) }
+            )
+        }
+        composable(Generala.route) {
+            GeneralaScreen()
+        }
+        composable(Truco.route) {
+            TrucoScreen()
+        }
+        composable(Generico.route) {
+            GenericoScreen()
         }
     }
 
@@ -97,5 +114,8 @@ sealed class Routes(val route:String){
             return "annotator/${userEmail}"
         }
     }
+    object Generala:Routes("generala")
+    object Truco:Routes("truco")
+    object Generico:Routes("generico")
 
 }

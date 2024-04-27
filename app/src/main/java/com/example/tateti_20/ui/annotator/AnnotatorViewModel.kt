@@ -43,6 +43,10 @@ class AnnotatorViewModel @Inject constructor(
         }
     }
 
+    fun navigateTo(navigateToAnnotator: () -> Unit) {
+        navigateToAnnotator()
+    }
+
 }
 
 

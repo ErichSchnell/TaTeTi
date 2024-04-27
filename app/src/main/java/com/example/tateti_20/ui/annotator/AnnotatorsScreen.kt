@@ -44,6 +44,9 @@ private val TAG = "erich"
 @Composable
 fun AnnotatorsScreen(
     annotatorViewModel: AnnotatorViewModel = hiltViewModel(),
+    navigateToTruco: () -> Unit,
+    navigateToGenerico: () -> Unit,
+    navigateToGenerala: () -> Unit,
     userEmail: String
 ){
     var showDialog by remember{mutableStateOf(false)}
@@ -72,9 +75,9 @@ fun AnnotatorsScreen(
         if (showDialog) {
             DialogSelectAnnotator(
                 onDismissRequest = { showDialog = false },
-                onClickAnnotatorGenerico = { Log.i(TAG, "generico")},
-                onClickAnnotatorTruco = {Log.i(TAG, "truco")},
-                onClickAnnotatorGenerala = {Log.i(TAG, "generala")}
+                onClickAnnotatorGenerico = { annotatorViewModel.navigateTo(navigateToGenerico)},
+                onClickAnnotatorTruco = { annotatorViewModel.navigateTo(navigateToTruco) },
+                onClickAnnotatorGenerala = { annotatorViewModel.navigateTo(navigateToGenerala) }
             )
         }
     }
