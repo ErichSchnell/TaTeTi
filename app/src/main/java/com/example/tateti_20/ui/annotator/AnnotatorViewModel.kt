@@ -43,8 +43,8 @@ class AnnotatorViewModel @Inject constructor(
         }
     }
 
-    fun navigateTo(navigateToAnnotator: () -> Unit) {
-        navigateToAnnotator()
+    fun navigateTo(userEmail:String, navigateToAnnotator: (String) -> Unit) {
+        navigateToAnnotator(userEmail)
     }
 
 }

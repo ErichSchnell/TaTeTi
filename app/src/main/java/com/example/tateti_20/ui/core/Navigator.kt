@@ -73,28 +73,36 @@ fun ContentWrapper(navigatonController: NavHostController) {
         ) {
             AnnotatorsScreen(
                 userEmail = it.arguments?.getString("userEmail").orEmpty(),
-                navigateToGenerala = { navigatonController.navigate(Generala.route) },
-                navigateToGenerico = { navigatonController.navigate(Generico.route) },
-                navigateToTruco = { navigatonController.navigate(Truco.route) }
+                navigateToGenerala = { userEmail -> navigatonController.navigate(Generala.createRoute(userEmail)) },
+                navigateToGenerico = { userEmail -> navigatonController.navigate(Generico.createRoute(userEmail)) },
+                navigateToTruco = { userEmail -> navigatonController.navigate(Truco.createRoute(userEmail)) }
             )
         }
-        composable(Generala.route) {
-            GeneralaScreen()
+        composable(
+            Generala.route,
+            arguments = listOf(
+                navArgument("userEmail") { type = NavType.StringType }
+            )
+        ) {
+            GeneralaScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
         }
-        composable(Truco.route) {
-            TrucoScreen()
+        composable(
+            Truco.route,
+            arguments = listOf(
+                navArgument("userEmail") { type = NavType.StringType }
+            )
+        ) {
+            TrucoScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
         }
-        composable(Generico.route) {
-            GenericoScreen()
+        composable(
+            Generico.route,
+            arguments = listOf(
+                navArgument("userEmail") { type = NavType.StringType }
+            )
+        ) {
+            GenericoScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
         }
     }
-
-
-
-
-
-
-
 }
 
 sealed class Routes(val route:String){
@@ -114,8 +122,20 @@ sealed class Routes(val route:String){
             return "annotator/${userEmail}"
         }
     }
-    object Generala:Routes("generala")
-    object Truco:Routes("truco")
-    object Generico:Routes("generico")
+    object Generala:Routes("generala/{userEmail}"){
+        fun createRoute(userEmail: String): String{
+            return "generala/${userEmail}"
+        }
+    }
+    object Truco:Routes("truco/{userEmail}"){
+        fun createRoute(userEmail: String): String{
+            return "truco/${userEmail}"
+        }
+    }
+    object Generico:Routes("generico/{userEmail}"){
+        fun createRoute(userEmail: String): String{
+            return "generico/${userEmail}"
+        }
+    }
 
 }

@@ -8,7 +8,8 @@ const val TAG = "erich"
 
 @Composable
 fun GeneralaScreen(
-    generalaViewModel: GeneralaViewModel = hiltViewModel()
+    generalaViewModel: GeneralaViewModel = hiltViewModel(),
+    userEmail: String
 ) {
-    Log.i(TAG, "GeneralaScreen: ")
+    Log.i(TAG, "GeneralaScreen con el usuario $userEmail")
 }

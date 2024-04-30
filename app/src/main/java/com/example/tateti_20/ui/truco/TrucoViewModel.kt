@@ -8,4 +8,10 @@ import javax.inject.Inject
 class TrucoViewModel @Inject constructor(
 
 ): ViewModel() {
+
+
+
+
+
+
 }
