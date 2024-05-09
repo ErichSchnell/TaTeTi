@@ -470,6 +470,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun openAnnotator(navigateToAnnotator: (String) -> Unit) {
+
         navigateToAnnotator(_user.value.userEmail)
     }
 

@@ -1,6 +1,8 @@
 package com.example.tateti_20.ui.annotator
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,19 +36,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
-
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 
 private val TAG = "erich"
 /*
 * homeViewModel: HomeViewModel = hiltViewModel(), navigateToMach: (String, String) -> Unit, navigateToHalls: (String) -> Unit, navigateToAnnotator: () -> Unit
 * */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AnnotatorsScreen(
     annotatorViewModel: AnnotatorViewModel = hiltViewModel(),
-    navigateToTruco: (String) -> Unit,
-    navigateToGenerico: (String) -> Unit,
-    navigateToGenerala: (String) -> Unit,
+    navigateToTruco: (String, String) -> Unit,
+    navigateToGenerico: (String, String) -> Unit,
+    navigateToGenerala: (String, String) -> Unit,
     userEmail: String
 ){
     var showDialog by remember{mutableStateOf(false)}
@@ -75,9 +79,9 @@ fun AnnotatorsScreen(
         if (showDialog) {
             DialogSelectAnnotator(
                 onDismissRequest = { showDialog = false },
-                onClickAnnotatorGenerico = { annotatorViewModel.navigateTo(userEmail, navigateToGenerico)},
-                onClickAnnotatorTruco = { annotatorViewModel.navigateTo(userEmail, navigateToTruco) },
-                onClickAnnotatorGenerala = { annotatorViewModel.navigateTo(userEmail, navigateToGenerala) }
+                onClickAnnotatorGenerico = {time ->  annotatorViewModel.navigateTo(userEmail, time, navigateToGenerico)},
+                onClickAnnotatorTruco = {time ->  annotatorViewModel.navigateTo(userEmail, time, navigateToTruco) },
+                onClickAnnotatorGenerala = {time ->  annotatorViewModel.navigateTo(userEmail, time, navigateToGenerala) }
             )
         }
     }
@@ -100,21 +104,26 @@ fun StartAnnotator(modifier: Modifier = Modifier, onClick: () -> Unit) {
     }
 
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DialogSelectAnnotator(
     onDismissRequest: () -> Unit,
-    onClickAnnotatorGenerico: () -> Unit,
-    onClickAnnotatorTruco: () -> Unit,
-    onClickAnnotatorGenerala: () -> Unit
+    onClickAnnotatorGenerico: (time:String) -> Unit,
+    onClickAnnotatorTruco: (time:String) -> Unit,
+    onClickAnnotatorGenerala: (time:String) -> Unit
 ){
+    val currentTime = LocalTime.now()
+    val formattedTime = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
+
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Column (
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Annotator(text = "GENERICO")  {onClickAnnotatorGenerico()}
-            Annotator(text = "TRUCO") {onClickAnnotatorTruco()}
-            Annotator(text = "GENERALA") {onClickAnnotatorGenerala()}
+            Annotator(text = "GENERICO")  {onClickAnnotatorGenerico(formattedTime)}
+            Annotator(text = "TRUCO") {onClickAnnotatorTruco(formattedTime)}
+            Annotator(text = "GENERALA") {onClickAnnotatorGenerala(formattedTime)}
         }
     }
 }

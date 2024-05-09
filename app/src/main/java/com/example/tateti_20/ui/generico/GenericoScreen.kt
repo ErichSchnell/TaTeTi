@@ -9,7 +9,8 @@ const val TAG = "erich"
 @Composable
 fun GenericoScreen(
     genericoViewModel: GenericoViewModel = hiltViewModel(),
-    userEmail: String
+    userEmail: String,
+    annotatorTime: String
 ) {
     Log.i(TAG, "GenericoScreen con el usuario $userEmail")
 }

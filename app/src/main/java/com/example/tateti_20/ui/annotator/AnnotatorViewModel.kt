@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 private val TAG = "erich"
@@ -43,8 +45,9 @@ class AnnotatorViewModel @Inject constructor(
         }
     }
 
-    fun navigateTo(userEmail:String, navigateToAnnotator: (String) -> Unit) {
-        navigateToAnnotator(userEmail)
+    fun navigateTo(userEmail:String, time:String, navigateToAnnotator: (String, String) -> Unit) {
+        Log.i(TAG, "AnnotatorViewModel navigateTo: $time")
+        navigateToAnnotator(userEmail, time)
     }
 
 }

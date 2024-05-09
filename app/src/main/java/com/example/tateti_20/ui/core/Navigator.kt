@@ -1,5 +1,7 @@
 package com.example.tateti_20.ui.core
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -15,6 +17,7 @@ import com.example.tateti_20.ui.halls.HallsScreen
 import com.example.tateti_20.ui.home.HomeScreen
 import com.example.tateti_20.ui.truco.TrucoScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ContentWrapper(navigatonController: NavHostController) {
 
@@ -73,34 +76,46 @@ fun ContentWrapper(navigatonController: NavHostController) {
         ) {
             AnnotatorsScreen(
                 userEmail = it.arguments?.getString("userEmail").orEmpty(),
-                navigateToGenerala = { userEmail -> navigatonController.navigate(Generala.createRoute(userEmail)) },
-                navigateToGenerico = { userEmail -> navigatonController.navigate(Generico.createRoute(userEmail)) },
-                navigateToTruco = { userEmail -> navigatonController.navigate(Truco.createRoute(userEmail)) }
+                navigateToGenerala = { userEmail, time -> navigatonController.navigate(Generala.createRoute(userEmail, time)) },
+                navigateToGenerico = { userEmail, time -> navigatonController.navigate(Generico.createRoute(userEmail, time)) },
+                navigateToTruco = { userEmail, time -> navigatonController.navigate(Truco.createRoute(userEmail, time)) }
             )
         }
         composable(
             Generala.route,
             arguments = listOf(
-                navArgument("userEmail") { type = NavType.StringType }
+                navArgument("userEmail") { type = NavType.StringType },
+                navArgument("time") { type = NavType.StringType }
             )
         ) {
-            GeneralaScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
+            GeneralaScreen(
+                userEmail = it.arguments?.getString("userEmail").orEmpty(),
+                annotatorTime = it.arguments?.getString("time").orEmpty()
+            )
         }
         composable(
             Truco.route,
             arguments = listOf(
-                navArgument("userEmail") { type = NavType.StringType }
+                navArgument("userEmail") { type = NavType.StringType },
+                navArgument("time") { type = NavType.StringType }
             )
         ) {
-            TrucoScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
+            TrucoScreen(
+                userEmail = it.arguments?.getString("userEmail").orEmpty(),
+                annotatorTime = it.arguments?.getString("time").orEmpty()
+            )
         }
         composable(
             Generico.route,
             arguments = listOf(
-                navArgument("userEmail") { type = NavType.StringType }
+                navArgument("userEmail") { type = NavType.StringType },
+                navArgument("time") { type = NavType.StringType }
             )
         ) {
-            GenericoScreen(userEmail = it.arguments?.getString("userEmail").orEmpty())
+            GenericoScreen(
+                userEmail = it.arguments?.getString("userEmail").orEmpty(),
+                annotatorTime = it.arguments?.getString("time").orEmpty()
+            )
         }
     }
 }
@@ -122,19 +137,19 @@ sealed class Routes(val route:String){
             return "annotator/${userEmail}"
         }
     }
-    object Generala:Routes("generala/{userEmail}"){
-        fun createRoute(userEmail: String): String{
-            return "generala/${userEmail}"
+    object Generala:Routes("generala/{userEmail}/{time}"){
+        fun createRoute(userEmail: String, time: String): String{
+            return "generala/$userEmail/$time"
         }
     }
-    object Truco:Routes("truco/{userEmail}"){
-        fun createRoute(userEmail: String): String{
-            return "truco/${userEmail}"
+    object Truco:Routes("truco/{userEmail}/{time}"){
+        fun createRoute(userEmail: String, time: String): String{
+            return "truco/$userEmail/$time"
         }
     }
-    object Generico:Routes("generico/{userEmail}"){
-        fun createRoute(userEmail: String): String{
-            return "generico/${userEmail}"
+    object Generico:Routes("generico/{userEmail}/{time}"){
+        fun createRoute(userEmail: String, time: String): String{
+            return "generico/$userEmail/$time"
         }
     }
 

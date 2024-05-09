@@ -1,6 +1,8 @@
 package com.example.tateti_20.ui.truco
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -21,26 +23,35 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.tateti_20.R
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
-import com.example.tateti_20.ui.theme.Orange2
+import java.time.LocalTime
 
 
-const val TAG = "erich"
+private const val TAG = "erich"
 @Composable
 fun TrucoScreen(
     trucoViewModel: TrucoViewModel = hiltViewModel(),
-    userEmail: String
+    userEmail: String,
+    annotatorTime: String
 ){
+
+    LaunchedEffect(true){
+        Log.i(TAG, "LaunchedEffect: $userEmail")
+        Log.i(TAG, "LaunchedEffect: $annotatorTime")
+    }
     Column(modifier = Modifier
         .fillMaxSize()
         .background(Background),
@@ -70,7 +81,6 @@ fun Cabecera(modifier: Modifier = Modifier) {
             color = Orange1,
             textAlign = TextAlign.Center
         )
-
         Icon(
             modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.Settings,
@@ -160,12 +170,15 @@ fun BoxPuntos(modifier: Modifier = Modifier){
     Box(
         modifier = modifier
     ) {
-        Divider(modifier = Modifier.align(Alignment.TopCenter), color = Orange2)
-        Divider(modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight().width(1.dp), color = Orange2)
-        Divider(modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(1.dp), color = Orange2)
-        Divider(modifier = Modifier.align(Alignment.BottomCenter), color = Orange2)
-
-        Divider(modifier = Modifier.align(Alignment.Center).rotate(-45f), color = Orange2)
+        Image(modifier = Modifier.align(Alignment.TopCenter), painter = painterResource(id = R.drawable.fosforo_hor), contentDescription = "1")
+        Image(modifier = Modifier
+            .rotate(180f)
+            .align(Alignment.CenterStart), painter = painterResource(id = R.drawable.fosforo_vert), contentDescription = "2")
+        Image(modifier = Modifier.align(Alignment.CenterEnd), painter = painterResource(id = R.drawable.fosforo_vert), contentDescription = "3")
+        Image(modifier = Modifier
+            .rotate(180f)
+            .align(Alignment.BottomCenter), painter = painterResource(id = R.drawable.fosforo_hor), contentDescription = "4")
+        Image(modifier = Modifier.align(Alignment.Center), painter = painterResource(id = R.drawable.fosforo_diag), contentDescription = "5")
     }
 }
 
