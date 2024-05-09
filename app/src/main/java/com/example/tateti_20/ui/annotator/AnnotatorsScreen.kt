@@ -1,7 +1,6 @@
 package com.example.tateti_20.ui.annotator
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
+import com.example.tateti_20.ui.theme.Orange2
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -89,8 +89,19 @@ fun AnnotatorsScreen(
 
 
 @Composable
-fun Loading(modifier: Modifier = Modifier) {
-    CircularProgressIndicator(modifier = modifier)
+fun Loading(modifier: Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(38.dp),
+            color = Orange2,
+            backgroundColor = Orange1,
+            strokeWidth = 2.dp
+        )
+    }
 }
 
 @Composable

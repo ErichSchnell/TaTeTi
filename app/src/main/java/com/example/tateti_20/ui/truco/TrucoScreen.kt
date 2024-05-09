@@ -1,10 +1,10 @@
 package com.example.tateti_20.ui.truco
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -37,8 +40,7 @@ import com.example.tateti_20.R
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
-import java.time.LocalTime
-
+import com.example.tateti_20.ui.theme.Orange2
 
 private const val TAG = "erich"
 @Composable
@@ -47,26 +49,57 @@ fun TrucoScreen(
     userEmail: String,
     annotatorTime: String
 ){
-
     LaunchedEffect(true){
-        Log.i(TAG, "LaunchedEffect: $userEmail")
-        Log.i(TAG, "LaunchedEffect: $annotatorTime")
+        trucoViewModel.initAnnotator(userEmail, annotatorTime)
     }
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(Background),
-        horizontalAlignment = Alignment.CenterHorizontally
+
+    val uiState by trucoViewModel.uiState.collectAsState()
+    val game by trucoViewModel.game.collectAsState()
+
+    when(uiState){
+        TrucoState.LOADING -> Loading(Modifier.fillMaxSize())
+        TrucoState.READY -> {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(Background),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Cabecera(modifier = Modifier.height(100.dp).fillMaxWidth())
+
+                Body(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    increasePlayer1 = { trucoViewModel.increasePlayer1() },
+                    increasePlayer2 = { trucoViewModel.increasePlayer2() },
+                )
+
+                RestarPuntos(
+                    modifier = Modifier.height(100.dp),
+                    decreasePlayer1 = { trucoViewModel.decreasePlayer1() },
+                    decreasePlayer2 = { trucoViewModel.decreasePlayer2() },
+                )
+            }
+        }
+        TrucoState.SETTING -> {}
+    }
+
+
+
+}
+
+
+@Composable
+fun Loading(modifier: Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Cabecera(modifier = Modifier
-            .height(100.dp)
-            .fillMaxWidth())
-
-
-        Body(modifier = Modifier
-            .weight(1f)
-            .fillMaxWidth())
-
-        RestarPuntos(modifier = Modifier.height(100.dp))
+        CircularProgressIndicator(
+            modifier = Modifier.size(38.dp),
+            color = Orange2,
+            backgroundColor = Orange1,
+            strokeWidth = 2.dp
+        )
     }
 }
 
@@ -99,11 +132,16 @@ fun Cabecera(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Body(modifier: Modifier = Modifier) {
+fun Body(
+    modifier: Modifier = Modifier,
+    increasePlayer1: () -> Unit,
+    increasePlayer2: () -> Unit,
+) {
     Row(modifier = modifier.background(Background), horizontalArrangement = Arrangement.Center){
         Column(modifier = Modifier
             .weight(1f)
-            .background(Background),
+            .background(Background)
+            .clickable { increasePlayer1() },
             horizontalAlignment = Alignment.CenterHorizontally) {
 
             Spacer(modifier = Modifier.weight(1f))
@@ -138,7 +176,8 @@ fun Body(modifier: Modifier = Modifier) {
         )
         Column(modifier = Modifier
             .weight(1f)
-            .background(Background),
+            .background(Background)
+            .clickable { increasePlayer2() },
             horizontalAlignment = Alignment.CenterHorizontally) {
 
             Spacer(modifier = Modifier.weight(1f))
@@ -183,12 +222,16 @@ fun BoxPuntos(modifier: Modifier = Modifier){
 }
 
 @Composable
-fun RestarPuntos(modifier: Modifier = Modifier) {
+fun RestarPuntos(
+    modifier: Modifier = Modifier,
+    decreasePlayer1:() -> Unit,
+    decreasePlayer2:() -> Unit
+    ) {
     Row (modifier = modifier.border(border = BorderStroke(1.dp, Accent))){
         Box (modifier = Modifier
             .fillMaxHeight()
             .weight(1f)
-            .background(Color.Gray),
+            .clickable { decreasePlayer1() },
             contentAlignment = Alignment.Center){
             Text(text = "-", color = Background)
         }
@@ -201,7 +244,7 @@ fun RestarPuntos(modifier: Modifier = Modifier) {
         Box (modifier = Modifier
             .fillMaxHeight()
             .weight(1f)
-            .background(Color.Gray),
+            .clickable { decreasePlayer2() },
             contentAlignment = Alignment.Center){
             Text(text = "-", color = Background)
         }
