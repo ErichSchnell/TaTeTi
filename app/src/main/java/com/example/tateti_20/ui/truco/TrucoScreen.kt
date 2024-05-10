@@ -1,5 +1,6 @@
 package com.example.tateti_20.ui.truco
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,16 +28,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.R
+import com.example.tateti_20.ui.model.TrucoModelUI
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
 import com.example.tateti_20.ui.theme.Orange1
@@ -59,15 +62,27 @@ fun TrucoScreen(
     when(uiState){
         TrucoState.LOADING -> Loading(Modifier.fillMaxSize())
         TrucoState.READY -> {
+
             Column(modifier = Modifier
                 .fillMaxSize()
                 .background(Background),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Cabecera(modifier = Modifier.height(100.dp).fillMaxWidth())
+                Cabecera(
+                    modifier = Modifier
+                        .height(100.dp)
+                        .fillMaxWidth(),
+                    player1Name = game.player1.playerName,
+                    player2Name = game.player2.playerName,
+                    onClickPlayer1 = { trucoViewModel.changeNamePlayer1("josue1") },
+                    onClickPlayer2 = { trucoViewModel.changeNamePlayer2("josue2") }
+                )
 
                 Body(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    game = game,
                     increasePlayer1 = { trucoViewModel.increasePlayer1() },
                     increasePlayer2 = { trucoViewModel.increasePlayer2() },
                 )
@@ -78,6 +93,7 @@ fun TrucoScreen(
                     decreasePlayer2 = { trucoViewModel.decreasePlayer2() },
                 )
             }
+
         }
         TrucoState.SETTING -> {}
     }
@@ -104,12 +120,20 @@ fun Loading(modifier: Modifier) {
 }
 
 @Composable
-fun Cabecera(modifier: Modifier = Modifier) {
+fun Cabecera(
+    modifier: Modifier = Modifier,
+    player1Name: String = "Nosotros",
+    player2Name: String = "Ellos",
+    onClickPlayer1:() -> Unit,
+    onClickPlayer2:() -> Unit,
+) {
     Row (modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
 
         Text(
-            modifier = Modifier.weight(1f),
-            text = "NOSOTROS",
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onClickPlayer1() },
+            text = player1Name,
             fontSize = 32.sp,
             color = Orange1,
             textAlign = TextAlign.Center
@@ -122,8 +146,10 @@ fun Cabecera(modifier: Modifier = Modifier) {
         )
 
         Text(
-            modifier = Modifier.weight(1f),
-            text = "ELLOS",
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onClickPlayer2() },
+            text = player2Name,
             fontSize = 32.sp,
             color = Orange1,
             textAlign = TextAlign.Center
@@ -134,90 +160,92 @@ fun Cabecera(modifier: Modifier = Modifier) {
 @Composable
 fun Body(
     modifier: Modifier = Modifier,
+    game: TrucoModelUI,
     increasePlayer1: () -> Unit,
     increasePlayer2: () -> Unit,
 ) {
+
     Row(modifier = modifier.background(Background), horizontalArrangement = Arrangement.Center){
-        Column(modifier = Modifier
-            .weight(1f)
-            .background(Background)
-            .clickable { increasePlayer1() },
-            horizontalAlignment = Alignment.CenterHorizontally) {
 
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-
-            Divider(
-                color = Accent,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-
-
-        }
-        Divider(
-                color = Accent,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(1.dp)
-                    .padding(vertical = 8.dp)
+        PointsPlayer(
+            modifier = Modifier
+                .weight(1f)
+                .background(Background)
+                .clickable { increasePlayer1() },
+            playerPoint = game.player1.playerPoint
         )
-        Column(modifier = Modifier
-            .weight(1f)
-            .background(Background)
-            .clickable { increasePlayer2() },
-            horizontalAlignment = Alignment.CenterHorizontally) {
-
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-
-            Divider(
-                color = Accent,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            BoxPuntos(Modifier.size(100.dp))
-            Spacer(modifier = Modifier.weight(1f))
-        }
+        Divider(color = Accent, modifier = Modifier
+            .fillMaxHeight()
+            .width(1.dp)
+            .padding(vertical = 8.dp))
+        PointsPlayer(
+            modifier = Modifier
+                .weight(1f)
+                .background(Background)
+                .clickable { increasePlayer2() },
+            playerPoint = game.player2.playerPoint
+        )
     }
 }
 
 @Composable
-fun BoxPuntos(modifier: Modifier = Modifier){
+fun PointsPlayer(modifier: Modifier = Modifier, playerPoint: Int){
+
+    var pointCount = playerPoint
+
+    Log.i(TAG, "PointsPlayer pointCount: $pointCount")
+
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.weight(1f))
+
+        for (i in 1 .. 6){
+
+            BoxPuntos(
+                Modifier.size(100.dp),
+                points = pointCount
+            )
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (i == 3){
+                Divider(
+                    color = Accent,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            if (pointCount >= 5) pointCount -= 5 else pointCount = 0
+        }
+
+
+    }
+}
+@Composable
+fun BoxPuntos(modifier: Modifier = Modifier, points: Int){
+    val limitAux = if (points > 5) 5 else points
     Box(
         modifier = modifier
     ) {
-        Image(modifier = Modifier.align(Alignment.TopCenter), painter = painterResource(id = R.drawable.fosforo_hor), contentDescription = "1")
-        Image(modifier = Modifier
-            .rotate(180f)
-            .align(Alignment.CenterStart), painter = painterResource(id = R.drawable.fosforo_vert), contentDescription = "2")
-        Image(modifier = Modifier.align(Alignment.CenterEnd), painter = painterResource(id = R.drawable.fosforo_vert), contentDescription = "3")
-        Image(modifier = Modifier
-            .rotate(180f)
-            .align(Alignment.BottomCenter), painter = painterResource(id = R.drawable.fosforo_hor), contentDescription = "4")
-        Image(modifier = Modifier.align(Alignment.Center), painter = painterResource(id = R.drawable.fosforo_diag), contentDescription = "5")
+
+        val alignmentList = listOf(
+            Alignment.CenterStart,
+            Alignment.TopCenter,
+            Alignment.CenterEnd,
+            Alignment.BottomCenter,
+            Alignment.Center
+        )
+        val drawableListList = listOf(
+            R.drawable.fosforo_vert,
+            R.drawable.fosforo_hor,
+            R.drawable.fosforo_vert,
+            R.drawable.fosforo_hor,
+            R.drawable.fosforo_diag
+        )
+
+        for (i in 0 until limitAux){
+            Image(modifier = Modifier.align(alignmentList[i]), painter = painterResource(id = drawableListList[i]), contentDescription = "")
+        }
+
     }
 }
 

@@ -6,6 +6,7 @@ import com.example.tateti_20.ui.model.TrucoModelUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 private const val TAG = "erich"
@@ -27,23 +28,34 @@ class TrucoViewModel @Inject constructor(
         Log.i(TAG, "initAnnotator: ${_game.value}")
     }
 
+
+
+
+    fun changeNamePlayer1(name: String) {
+        _game.value = _game.value.setNamePlayer1(name)
+        Log.i(TAG, "player1: ${_game.value.player1.playerName}")
+    }
     fun increasePlayer1() {
-        _game.value = _game.value.copy(player1Point = _game.value.player1Point.inc())
-        Log.i(TAG, "initAnnotator: ${_game.value}")
+        _game.value = _game.value.increasePlayer1()
+        Log.i(TAG, "player1: ${_game.value.player1.playerPoint}")
     }
     fun decreasePlayer1(){
-        _game.value = _game.value.copy(player1Point = _game.value.player1Point.dec())
-        Log.i(TAG, "initAnnotator: ${_game.value}")
-    }
-    fun increasePlayer2(){
-        _game.value = _game.value.copy(player2Point = _game.value.player2Point.inc())
-        Log.i(TAG, "initAnnotator: ${_game.value}")
-    }
-    fun decreasePlayer2(){
-        _game.value = _game.value.copy(player2Point = _game.value.player2Point.dec())
-        Log.i(TAG, "initAnnotator: ${_game.value}")
+        _game.value = _game.value.decreasePlayer1()
+        Log.i(TAG, "player1: ${_game.value.player1.playerPoint}")
     }
 
+    fun changeNamePlayer2(name: String) {
+        _game.value = _game.value.setNamePlayer2(name)
+        Log.i(TAG, "player2: ${_game.value.player2.playerName}")
+    }
+    fun increasePlayer2(){
+        _game.value = _game.value.increasePlayer2()
+        Log.i(TAG, "player2: ${_game.value.player2.playerPoint}")
+    }
+    fun decreasePlayer2(){
+        _game.value = _game.value.decreasePlayer2()
+        Log.i(TAG, "player2: ${_game.value.player2.playerPoint}")
+    }
 
 
 }
