@@ -1,6 +1,5 @@
 package com.example.tateti_20.ui.truco
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,11 +17,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.TrucoModelUI
@@ -59,41 +65,60 @@ fun TrucoScreen(
     val uiState by trucoViewModel.uiState.collectAsState()
     val game by trucoViewModel.game.collectAsState()
 
+    var showSetting by remember{ mutableStateOf(false) }
+    var showChangeNamePlayer1 by remember{ mutableStateOf(false) }
+    var showChangeNamePlayer2 by remember{ mutableStateOf(false) }
+
     when(uiState){
         TrucoState.LOADING -> Loading(Modifier.fillMaxSize())
         TrucoState.READY -> {
+            Box (modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
 
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .background(Background),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Cabecera(
-                    modifier = Modifier
-                        .height(100.dp)
-                        .fillMaxWidth(),
-                    player1Name = game.player1.playerName,
-                    player2Name = game.player2.playerName,
-                    onClickPlayer1 = { trucoViewModel.changeNamePlayer1("josue1") },
-                    onClickPlayer2 = { trucoViewModel.changeNamePlayer2("josue2") }
-                )
-
-                Body(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                TrucoAnnotator(
                     game = game,
-                    increasePlayer1 = { trucoViewModel.increasePlayer1() },
-                    increasePlayer2 = { trucoViewModel.increasePlayer2() },
-                )
 
-                RestarPuntos(
-                    modifier = Modifier.height(100.dp),
+                    onClickSetting = { showSetting = true },
+
+                    onChangeNamePlayer1 = { showChangeNamePlayer1 = true },
+                    increasePlayer1 = { trucoViewModel.increasePlayer1() },
                     decreasePlayer1 = { trucoViewModel.decreasePlayer1() },
+
+                    onChangeNamePlayer2 = { showChangeNamePlayer2 = true },
+                    increasePlayer2 = { trucoViewModel.increasePlayer2() },
                     decreasePlayer2 = { trucoViewModel.decreasePlayer2() },
                 )
-            }
 
+                if(showSetting){
+                    DialogSetting(
+                        pointCurrent = game.pointLimit,
+                        onDismissRequest = { showSetting = false },
+                        onClickResetAnnotator = {
+                            trucoViewModel.setAnnotator(it)
+                            showSetting = false
+                        }
+                    )
+                }
+                if (showChangeNamePlayer1){
+                    DialogChangeName(
+                        onDismissRequest = { showChangeNamePlayer1 = false },
+                        onChangeName = {
+                            trucoViewModel.changeNamePlayer1(it)
+                            showChangeNamePlayer1 = false
+                        }
+                    )
+                }
+                if (showChangeNamePlayer2){
+                    DialogChangeName(
+                        onDismissRequest = { showChangeNamePlayer2 = false },
+                        onChangeName = {
+                            trucoViewModel.changeNamePlayer2(it)
+                            showChangeNamePlayer2 = false
+                        }
+                    )
+                }
+
+
+            }
         }
         TrucoState.SETTING -> {}
     }
@@ -119,13 +144,56 @@ fun Loading(modifier: Modifier) {
     }
 }
 
+
+@Composable
+fun TrucoAnnotator(
+    game: TrucoModelUI,
+    onClickSetting: () -> Unit,
+    onChangeNamePlayer1: () -> Unit,
+    onChangeNamePlayer2: () -> Unit,
+    increasePlayer1: () -> Unit,
+    decreasePlayer1:() -> Unit,
+    increasePlayer2: () -> Unit,
+    decreasePlayer2:() -> Unit
+) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Background), horizontalAlignment = Alignment.CenterHorizontally) {
+        Cabecera(
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth(),
+            player1Name = game.player1.playerName,
+            player2Name = game.player2.playerName,
+            onClickSetting = { onClickSetting() },
+            onClickPlayer1 = { onChangeNamePlayer1() },
+            onClickPlayer2 = { onChangeNamePlayer2() }
+        )
+
+        Body(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            game = game,
+            increasePlayer1 = { increasePlayer1() },
+            increasePlayer2 = { increasePlayer2() },
+        )
+
+        RestarPuntos(
+            modifier = Modifier.height(100.dp),
+            decreasePlayer1 = { decreasePlayer1() },
+            decreasePlayer2 = { decreasePlayer2() },
+        )
+    }
+}
 @Composable
 fun Cabecera(
     modifier: Modifier = Modifier,
     player1Name: String = "Nosotros",
     player2Name: String = "Ellos",
-    onClickPlayer1:() -> Unit,
-    onClickPlayer2:() -> Unit,
+    onClickSetting: () -> Unit,
+    onClickPlayer1: () -> Unit,
+    onClickPlayer2: () -> Unit,
 ) {
     Row (modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
 
@@ -139,7 +207,9 @@ fun Cabecera(
             textAlign = TextAlign.Center
         )
         Icon(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onClickSetting() },
             imageVector = Icons.Default.Settings,
             tint = Accent,
             contentDescription = ""
@@ -156,6 +226,8 @@ fun Cabecera(
         )
     }
 }
+
+
 
 @Composable
 fun Body(
@@ -187,13 +259,10 @@ fun Body(
         )
     }
 }
-
 @Composable
 fun PointsPlayer(modifier: Modifier = Modifier, playerPoint: Int){
 
     var pointCount = playerPoint
-
-    Log.i(TAG, "PointsPlayer pointCount: $pointCount")
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.weight(1f))
@@ -220,6 +289,7 @@ fun PointsPlayer(modifier: Modifier = Modifier, playerPoint: Int){
 
     }
 }
+
 @Composable
 fun BoxPuntos(modifier: Modifier = Modifier, points: Int){
     val limitAux = if (points > 5) 5 else points
@@ -254,7 +324,7 @@ fun RestarPuntos(
     modifier: Modifier = Modifier,
     decreasePlayer1:() -> Unit,
     decreasePlayer2:() -> Unit
-    ) {
+) {
     Row (modifier = modifier.border(border = BorderStroke(1.dp, Accent))){
         Box (modifier = Modifier
             .fillMaxHeight()
@@ -278,3 +348,85 @@ fun RestarPuntos(
         }
     }
 }
+
+@Composable
+fun DialogSetting(pointCurrent:Int ,onDismissRequest:() -> Unit, onClickResetAnnotator:(Int) -> Unit){
+    val pointList = listOf(12, 15, 24, 30)
+    var selectedPoint by remember { mutableStateOf(pointCurrent) }
+
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Column(Modifier.padding(6.dp)) {
+
+            Text(text = "PUNTOS")
+
+            pointList.forEach { points ->
+                Row(Modifier.padding(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectedPoint == points,
+                        onClick = { selectedPoint = points }
+                    )
+                    Text(text = "$points")
+                }
+            }
+            Button(onClick = { onClickResetAnnotator(selectedPoint) }) {
+                Text(text = "Reiniciar")
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DialogChangeName(onDismissRequest:() -> Unit, onChangeName:(String) -> Unit){
+    var name by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            OutlinedTextField(
+                label = { Text(text = "New Name", color = Orange2) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                value = name,
+                onValueChange = { name = it },
+                maxLines = 1,
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    cursorColor = Orange1,
+                    textColor = Accent,
+                    focusedBorderColor = Orange1,
+                    unfocusedBorderColor = Orange2
+                )
+            )
+            Button(
+                modifier = Modifier.padding(end = 24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Orange1,
+                    contentColor = Accent
+                ),
+                onClick = {
+                    onChangeName(name)
+                },
+                enabled = name.isNotEmpty() && name.length < 12
+            ) {
+                Text(text = "Update Name")
+            }
+        }
+    }
+}
+
+
+//@Composable
+//fun DialogSetting(onDismissRequest:()->Unit, onClickResetAnnotator:(Boolean) -> Unit){
+//
+//    var playerName by remember{ mutableStateOf("") }
+//
+//
+//}
