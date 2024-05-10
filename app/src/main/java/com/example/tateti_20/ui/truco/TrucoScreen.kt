@@ -46,8 +46,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tateti_20.R
 import com.example.tateti_20.ui.model.TrucoModelUI
+import com.example.tateti_20.ui.model.TypePlayer
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
+import com.example.tateti_20.ui.theme.HalfAccent
 import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
 
@@ -116,8 +118,15 @@ fun TrucoScreen(
                         }
                     )
                 }
-
-
+                if (game.winner != TypePlayer.VACIO) {
+                    DialogFinishGame(
+                        winner = if (game.winner == TypePlayer.PLAYER1) game.player1.playerName else game.player2.playerName,
+                        onClickCancel = { trucoViewModel.clearWinner() },
+                        onClickResetAnnotator = {
+                            trucoViewModel.setAnnotator(game.pointLimit)
+                        }
+                    )
+                }
             }
         }
         TrucoState.SETTING -> {}
@@ -208,7 +217,7 @@ fun Cabecera(
         )
         Icon(
             modifier = Modifier
-                .size(24.dp)
+                .size(36.dp)
                 .clickable { onClickSetting() },
             imageVector = Icons.Default.Settings,
             tint = Accent,
@@ -355,9 +364,12 @@ fun DialogSetting(pointCurrent:Int ,onDismissRequest:() -> Unit, onClickResetAnn
     var selectedPoint by remember { mutableStateOf(pointCurrent) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
-        Column(Modifier.padding(6.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).background(HalfAccent),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-            Text(text = "PUNTOS")
+            Text(text = "POINTS")
 
             pointList.forEach { points ->
                 Row(Modifier.padding(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -368,8 +380,13 @@ fun DialogSetting(pointCurrent:Int ,onDismissRequest:() -> Unit, onClickResetAnn
                     Text(text = "$points")
                 }
             }
-            Button(onClick = { onClickResetAnnotator(selectedPoint) }) {
-                Text(text = "Reiniciar")
+            Button(
+                modifier = Modifier.padding(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Orange1,
+                    contentColor = Accent
+                ),onClick = { onClickResetAnnotator(selectedPoint) }) {
+                Text(text = "RESET")
             }
         }
     }
@@ -417,6 +434,38 @@ fun DialogChangeName(onDismissRequest:() -> Unit, onChangeName:(String) -> Unit)
                 enabled = name.isNotEmpty() && name.length < 12
             ) {
                 Text(text = "Update Name")
+            }
+        }
+    }
+}
+
+
+
+
+@Composable
+fun DialogFinishGame(winner:String, onClickCancel:() -> Unit, onClickResetAnnotator:() -> Unit){
+    var name by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = {}) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "WINNER TEAM $winner")
+            Row (modifier = Modifier.padding(6.dp)) {
+                Button(
+                    modifier = Modifier.padding(end = 24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Orange1,
+                        contentColor = Accent
+                    ),onClick = {onClickCancel()}) {
+                    Text(text = "Cancel")
+                }
+                Button(
+                    modifier = Modifier.padding(end = 24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Orange1,
+                        contentColor = Accent
+                    ),onClick = {onClickResetAnnotator()}) {
+                    Text(text = "Reset")
+                }
             }
         }
     }

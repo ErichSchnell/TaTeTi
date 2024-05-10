@@ -34,6 +34,9 @@ class TrucoViewModel @Inject constructor(
     fun setAnnotator(pointMax:Int){
         _game.value = _game.value.resetPoint(pointMax)
     }
+    fun clearWinner(){
+        _game.value = _game.value.clearWinner()
+    }
 
     fun changeNamePlayer1(name: String) {
         _game.value = _game.value.setNamePlayer1(name)

@@ -15,7 +15,9 @@ data class TrucoModelUI(
         player2 = this.player2.setPoint(0),
         winner = TypePlayer.VACIO
     )
-
+    fun clearWinner() = this.copy(
+        winner = TypePlayer.VACIO
+    )
     fun setNamePlayer1(name:String) = this.copy(player1 = this.player1.setName(name))
     fun increasePlayer1() = this.copy(player1 = this.player1.setPoint(this.player1.playerPoint.inc()))
     fun decreasePlayer1() = this.copy(player1 = this.player1.setPoint(this.player1.playerPoint.dec()))
