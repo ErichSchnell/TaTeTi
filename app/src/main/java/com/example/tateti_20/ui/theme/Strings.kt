@@ -40,6 +40,7 @@ const val string_exception_no_registrada = "Try it again"
 * */
 const val string_reset = "Reset"
 const val string_setting_points = "SETTING POINTS"
+const val string_restar_point = "Subtract"
 const val string_team_winner = "WINNER"
 /*
 * ------------------------------------

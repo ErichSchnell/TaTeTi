@@ -59,6 +59,7 @@ import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
 import com.example.tateti_20.ui.theme.string_cancel
 import com.example.tateti_20.ui.theme.string_reset
+import com.example.tateti_20.ui.theme.string_restar_point
 import com.example.tateti_20.ui.theme.string_setting_points
 import com.example.tateti_20.ui.theme.string_winner_game
 
@@ -226,7 +227,8 @@ fun Cabecera(
         )
         Icon(
             modifier = Modifier
-                .size(36.dp)
+                .padding(8.dp)
+                .size(44.dp)
                 .clickable { onClickSetting() },
             imageVector = Icons.Default.Settings,
             tint = Accent,
@@ -350,7 +352,7 @@ fun RestarPuntos(
             .background(HalfAccent)
             .clickable { decreasePlayer1() },
             contentAlignment = Alignment.Center){
-            Text(text = "-", fontSize = 36.sp, color = Background, fontWeight = FontWeight.Bold)
+            Text(text = string_restar_point, fontSize = 24.sp, color = Orange2, fontWeight = FontWeight.ExtraLight)
         }
         Divider(
             color = Accent,
@@ -364,7 +366,7 @@ fun RestarPuntos(
             .background(HalfAccent)
             .clickable { decreasePlayer2() },
             contentAlignment = Alignment.Center){
-            Text(text = "-", fontSize = 36.sp, color = Background, fontWeight = FontWeight.Bold)
+            Text(text = string_restar_point, fontSize = 24.sp, color = Orange2, fontWeight = FontWeight.ExtraLight)
         }
     }
 }
