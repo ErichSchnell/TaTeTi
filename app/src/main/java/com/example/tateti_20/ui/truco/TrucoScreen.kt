@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -38,7 +40,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,9 +53,14 @@ import com.example.tateti_20.ui.model.TrucoModelUI
 import com.example.tateti_20.ui.model.TypePlayer
 import com.example.tateti_20.ui.theme.Accent
 import com.example.tateti_20.ui.theme.Background
+import com.example.tateti_20.ui.theme.BackgroundTitleHall
 import com.example.tateti_20.ui.theme.HalfAccent
 import com.example.tateti_20.ui.theme.Orange1
 import com.example.tateti_20.ui.theme.Orange2
+import com.example.tateti_20.ui.theme.string_cancel
+import com.example.tateti_20.ui.theme.string_reset
+import com.example.tateti_20.ui.theme.string_setting_points
+import com.example.tateti_20.ui.theme.string_winner_game
 
 private const val TAG = "erich"
 @Composable
@@ -338,9 +347,10 @@ fun RestarPuntos(
         Box (modifier = Modifier
             .fillMaxHeight()
             .weight(1f)
+            .background(HalfAccent)
             .clickable { decreasePlayer1() },
             contentAlignment = Alignment.Center){
-            Text(text = "-", color = Background)
+            Text(text = "-", fontSize = 36.sp, color = Background, fontWeight = FontWeight.Bold)
         }
         Divider(
             color = Accent,
@@ -351,9 +361,10 @@ fun RestarPuntos(
         Box (modifier = Modifier
             .fillMaxHeight()
             .weight(1f)
+            .background(HalfAccent)
             .clickable { decreasePlayer2() },
             contentAlignment = Alignment.Center){
-            Text(text = "-", color = Background)
+            Text(text = "-", fontSize = 36.sp, color = Background, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -364,29 +375,41 @@ fun DialogSetting(pointCurrent:Int ,onDismissRequest:() -> Unit, onClickResetAnn
     var selectedPoint by remember { mutableStateOf(pointCurrent) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).background(HalfAccent),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .padding(horizontal = 16.dp)
+                .border(2.dp, Orange1, RoundedCornerShape(24.dp))
         ) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(Background),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "POINTS")
+                Text(text = string_setting_points, fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(24.dp))
 
-            pointList.forEach { points ->
-                Row(Modifier.padding(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = selectedPoint == points,
-                        onClick = { selectedPoint = points }
-                    )
-                    Text(text = "$points")
+                pointList.forEach { points ->
+                    Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = selectedPoint == points,
+                            onClick = { selectedPoint = points }
+                        )
+                        Text(text = "$points")
+                    }
                 }
-            }
-            Button(
-                modifier = Modifier.padding(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Orange1,
-                    contentColor = Accent
-                ),onClick = { onClickResetAnnotator(selectedPoint) }) {
-                Text(text = "RESET")
+                Button(
+                    modifier = Modifier.padding(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Orange1,
+                        contentColor = Accent
+                    ),onClick = { onClickResetAnnotator(selectedPoint) }) {
+                    Text(text = "RESET")
+                }
             }
         }
     }
@@ -398,48 +421,67 @@ fun DialogChangeName(onDismissRequest:() -> Unit, onChangeName:(String) -> Unit)
     var name by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            OutlinedTextField(
-                label = { Text(text = "New Name", color = Orange2) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                value = name,
-                onValueChange = { name = it },
-                maxLines = 1,
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    cursorColor = Orange1,
-                    textColor = Accent,
-                    focusedBorderColor = Orange1,
-                    unfocusedBorderColor = Orange2
-                )
-            )
-            Button(
-                modifier = Modifier.padding(end = 24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Orange1,
-                    contentColor = Accent
-                ),
-                onClick = {
-                    onChangeName(name)
-                },
-                enabled = name.isNotEmpty() && name.length < 12
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .padding(horizontal = 16.dp)
+                .border(2.dp, Orange1, RoundedCornerShape(24.dp))
+        ) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(Background),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Update Name")
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    label = { Text(text = "New Name", color = Orange2) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    value = name,
+                    onValueChange = {
+                        if (it.length <= 12){
+                            name = it
+                        }
+                    },
+                    maxLines = 1,
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Orange1,
+                        textColor = Accent,
+                        focusedBorderColor = Orange1,
+                        unfocusedBorderColor = Orange2
+                    )
+                )
+
+                Button(
+                    modifier = Modifier.padding(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Orange1,
+                        contentColor = Accent
+                    ),
+                    onClick = {
+                        onChangeName(name)
+                    },
+                    enabled = name.isNotEmpty()
+                ) {
+                    Text(text = "Update Name")
+                }
             }
         }
+
     }
 }
-
-
 
 
 @Composable
@@ -447,27 +489,49 @@ fun DialogFinishGame(winner:String, onClickCancel:() -> Unit, onClickResetAnnota
     var name by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = {}) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "WINNER TEAM $winner")
-            Row (modifier = Modifier.padding(6.dp)) {
-                Button(
-                    modifier = Modifier.padding(end = 24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Orange1,
-                        contentColor = Accent
-                    ),onClick = {onClickCancel()}) {
-                    Text(text = "Cancel")
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .padding(horizontal = 16.dp)
+                .border(2.dp, Orange1, RoundedCornerShape(24.dp)),
+
+        ) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(Background),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+                    Text(text = string_winner_game, fontSize = 24.sp, color = Orange1, fontWeight = FontWeight.Bold)
+                    Text(text = " $winner", fontSize = 24.sp, color = Orange2, fontWeight = FontWeight.Bold)
                 }
-                Button(
-                    modifier = Modifier.padding(end = 24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Orange1,
-                        contentColor = Accent
-                    ),onClick = {onClickResetAnnotator()}) {
-                    Text(text = "Reset")
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row (modifier = Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.Center) {
+                    Button(
+                        modifier = Modifier.padding(end = 24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Orange1,
+                            contentColor = Accent
+                        ),onClick = {onClickCancel()}) {
+                        Text(text = string_cancel)
+                    }
+                    Button(
+                        modifier = Modifier.padding(end = 24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Orange1,
+                            contentColor = Accent
+                        ),onClick = {onClickResetAnnotator()}) {
+                        Text(text = string_reset)
+                    }
                 }
             }
         }
+
     }
 }
 

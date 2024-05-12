@@ -3,7 +3,6 @@ package com.example.tateti_20.ui.theme
 /**
  * -------------- GAME ---------------
  */
-
 const val string_winner_game = "WINNER:" 
 const val string_play_again = "Play Again"
 const val string_waiting = "Waiting"
@@ -31,7 +30,25 @@ const val string_pass_same = "passwords aren\'t same"
 const val string_email_sent = "Email Sent"
 const val string_insert_email = "Insert Email"
 const val string_exception_no_registrada = "Try it again"
-
 /*
 * ------------------------------------
 * */
+
+
+/*
+* ------------------- ANNOTATOR TRUCO -------------------
+* */
+const val string_reset = "Reset"
+const val string_setting_points = "SETTING POINTS"
+const val string_team_winner = "WINNER"
+/*
+* ------------------------------------
+* */
+
+
+
+
+
+
+
+
