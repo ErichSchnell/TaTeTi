@@ -17,7 +17,7 @@ android {
         targetSdk = 34
 
         versionCode = 1
-        versionName = "1.0"
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -79,15 +79,15 @@ dependencies {
 
     //Dagger
     implementation ("com.google.dagger:hilt-android:2.44.2")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
     kapt("com.google.dagger:hilt-compiler:2.44.2")
+
+    //DataStore
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
     //Navigation
     implementation ("androidx.navigation:navigation-compose:2.7.0")
     androidTestImplementation ("androidx.navigation:navigation-testing:2.7.0")
-
-    //DataStore
-    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
@@ -104,7 +104,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-
 
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")

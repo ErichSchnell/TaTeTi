@@ -247,7 +247,7 @@ fun ModalDrawerProfile(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            ItemModal( text = "Annotator", onClick = {onClickAnnotator()})
+            //ItemModal( text = "Annotator", onClick = {onClickAnnotator()})
 
             Spacer(modifier = Modifier
                 .fillMaxWidth()
